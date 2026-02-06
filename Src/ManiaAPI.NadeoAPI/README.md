@@ -30,6 +30,7 @@ For `NadeoLiveServices`:
 - **Edit club activities**
 - Get map info
 - Get map leaderboards
+- Get leaderboard positions by time
 - Get map medal records
 - Get seasonal campaigns
 - Get weekly shorts
