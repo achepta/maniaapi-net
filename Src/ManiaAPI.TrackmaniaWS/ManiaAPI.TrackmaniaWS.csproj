@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageId>ManiaAPI.TrackmaniaWS</PackageId>
-        <Version>2.4.0</Version>
+        <Version>2.5.3</Version>
         <Authors>BigBang1112</Authors>
         <Description>Wrapper for the old TMF web API (ws.trackmania.com). Part of the ManiaAPI.NET library set.</Description>
         <Copyright>Copyright (c) 2022-2026 Petr Pivoňka</Copyright>
@@ -15,8 +15,8 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
-        <LangVersion>13</LangVersion>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <LangVersion>14</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsTrimmable>true</IsTrimmable>
@@ -45,7 +45,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="TmEssentials" Version="2.5.3" />
+        <PackageReference Include="TmEssentials" Version="2.6.0" />
     </ItemGroup>
 
 </Project>
