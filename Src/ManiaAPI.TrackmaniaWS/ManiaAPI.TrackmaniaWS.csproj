@@ -5,7 +5,7 @@
         <Version>2.4.0</Version>
         <Authors>BigBang1112</Authors>
         <Description>Wrapper for the old TMF web API (ws.trackmania.com). Part of the ManiaAPI.NET library set.</Description>
-        <Copyright>Copyright (c) 2022-2025 Petr Pivoňka</Copyright>
+        <Copyright>Copyright (c) 2022-2026 Petr Pivoňka</Copyright>
         <PackageProjectUrl>https://github.com/BigBang1112/maniaapi-net</PackageProjectUrl>
         <PackageIcon>logo_icon_outline.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
