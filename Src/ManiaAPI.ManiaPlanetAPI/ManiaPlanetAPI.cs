@@ -244,6 +244,15 @@ public class ManiaPlanetAPI : IManiaPlanetAPI
         return zones.Select(x => x.Path);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="filters">Possible values: shootmania, trackmania, solo, multiplayer, matchmaking, environments</param>
+    /// <param name="orderBy">Possible values: onlinePlayers, lastUpdate, registrations, playersLast24h</param>
+    /// <param name="offset"></param>
+    /// <param name="length"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public virtual async Task<ImmutableList<Title>> SearchTitlesAsync(
         string[]? filters = null, 
         string? orderBy = "onlinePlayers", 
@@ -256,11 +265,14 @@ public class ManiaPlanetAPI : IManiaPlanetAPI
 
         if (filters is not null)
         {
-            sb.Append(first ? '?' : '&');
-            first = false;
+            foreach (var filter in filters)
+            {
+                sb.Append(first ? '?' : '&');
+                first = false;
 
-            sb.Append("filters[]=");
-            sb.Append(string.Join(",", filters));
+                sb.Append("filters%5b%5d=");
+                sb.Append(filter);
+            }
         }
 
         if (orderBy is not null and not "onlinePlayers")
@@ -304,6 +316,23 @@ public class ManiaPlanetAPI : IManiaPlanetAPI
         return await GetJsonAsync($"titles/{uid}/scripts", ManiaPlanetAPIJsonContext.Default.ImmutableListTitleScript, cancellationToken);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="orderBy">Possible values: playerCount, levelClass1</param>
+    /// <param name="titleUids"></param>
+    /// <param name="environments"></param>
+    /// <param name="scriptName"></param>
+    /// <param name="search"></param>
+    /// <param name="zone"></param>
+    /// <param name="onlyPublic"></param>
+    /// <param name="onlyPrivate"></param>
+    /// <param name="onlyLobby"></param>
+    /// <param name="excludeLobby"></param>
+    /// <param name="offset"></param>
+    /// <param name="length"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public virtual async Task<ImmutableList<OnlineServer>> SearchOnlineServersAsync(
         string orderBy = "playerCount",
         string[]? titleUids = null,
@@ -334,20 +363,26 @@ public class ManiaPlanetAPI : IManiaPlanetAPI
 
         if (titleUids is not null)
         {
-            sb.Append(first ? '?' : '&');
-            first = false;
+            foreach (var titleUid in titleUids)
+            {
+                sb.Append(first ? '?' : '&');
+                first = false;
 
-            sb.Append("titleUids[]=");
-            sb.Append(string.Join(",", titleUids));
+                sb.Append("titleUids[]=");
+                sb.Append(titleUid);
+            }
         }
 
         if (environments is not null)
         {
-            sb.Append(first ? '?' : '&');
-            first = false;
+            foreach (var environment in environments)
+            {
+                sb.Append(first ? '?' : '&');
+                first = false;
 
-            sb.Append("environments[]=");
-            sb.Append(string.Join(",", environments));
+                sb.Append("environments[]=");
+                sb.Append(environment);
+            }
         }
 
         if (scriptName is not null)
