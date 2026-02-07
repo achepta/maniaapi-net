@@ -43,5 +43,9 @@ namespace ManiaAPI.NadeoAPI;
 [JsonSerializable(typeof(ClubFolder))]
 [JsonSerializable(typeof(MapGroupIdCollection))]
 [JsonSerializable(typeof(ImmutableList<Position>))]
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(CupOfTheDayCollection))]
+[JsonSourceGenerationOptions(
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, 
+    PropertyNameCaseInsensitive = true, 
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 internal sealed partial class NadeoAPIJsonContext : JsonSerializerContext;
