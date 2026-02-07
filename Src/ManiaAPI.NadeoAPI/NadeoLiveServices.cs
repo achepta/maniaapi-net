@@ -21,6 +21,8 @@ public interface INadeoLiveServices : INadeoAPI
     Task<TrackOfTheDayInfo> GetTrackOfTheDayInfoAsync(string mapUid, CancellationToken cancellationToken = default);
     Task<CampaignCollection> GetSeasonalCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default);
     Task<SeasonPlayerRankingCollection> GetPlayerSeasonRankingsAsync(Guid accountId, string groupUid, CancellationToken cancellationToken = default);
+    [Obsolete("Use GetWeeklyShortCampaignsAsync instead.")]
+    Task<CampaignCollection> GetWeeklyCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default);
     Task<CampaignCollection> GetWeeklyShortCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default);
     Task<CampaignCollection> GetWeeklyGrandCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default);
     Task<ClubMember> GetClubMemberAsync(int clubId, Guid accountId, CancellationToken cancellationToken = default);
@@ -202,6 +204,12 @@ public class NadeoLiveServices : NadeoAPI, INadeoLiveServices
 
         return await GetJsonAsync($"token/leaderboard/group/{groupUid}?accountId={accountId}",
             NadeoAPIJsonContext.Default.SeasonPlayerRankingCollection, cancellationToken);
+    }
+
+    [Obsolete("Use GetWeeklyShortCampaignsAsync instead.")]
+    public virtual async Task<CampaignCollection> GetWeeklyCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default)
+    {
+        return await GetWeeklyShortCampaignsAsync(length, offset, cancellationToken);
     }
 
     public virtual async Task<CampaignCollection> GetWeeklyShortCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default)

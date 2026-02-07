@@ -21,7 +21,7 @@ public abstract class InitServer : IInitServer
     protected InitServer(HttpClient client)
     {
         Client = client;
-        Client.DefaultRequestHeaders.UserAgent.ParseAdd("ManiaAPI.NET/2.5.3 (Xml; Email=petrpiv1@gmail.com; Discord=bigbang1112)");
+        Client.DefaultRequestHeaders.UserAgent.ParseAdd("ManiaAPI.NET/2.6.0 (Xml; Email=petrpiv1@gmail.com; Discord=bigbang1112)");
 
         ServerUri = client.BaseAddress ?? throw new ArgumentException("InitServer must have BaseAddress set", nameof(client));
     }
