@@ -21,15 +21,24 @@ public class TrackmaniaAPITests
 
         var client = new TrackmaniaAPI();
 
-        await client.AuthorizeAsync(clientId, clientSecret);
+        await client.AuthorizeAsync(clientId, clientSecret, ["read_favorite"]);
 
-        var displayNames = await client.GetDisplayNamesAsync(
-        [
+        var expectedAccountIds = new Guid[]
+        {
             Guid.Parse("6a43df20-cd1a-4b3b-87b9-a6835a9b416d"),
             Guid.Parse("faedcf21-d61a-4305-9ffe-680b2ee5d65e")
-        ]);
+        };
+
+        var displayNames = await client.GetDisplayNamesAsync(expectedAccountIds);
+
+        var actualAccountIds = await client.GetAccountIdsAsync(displayNames.Values);
+
+        // cuz tested on dedicated server, it should not pass
+        await Assert.ThrowsAsync<TrackmaniaAPIResponseException>(() => client.GetUserAsync());
+        await Assert.ThrowsAsync<TrackmaniaAPIResponseException>(() => client.GetUserMapRecordsAsync([Guid.Parse("ed53486f-a80d-419b-b073-54bb8944d502")]));
 
         Assert.IsType<ImmutableDictionary<Guid, string>>(displayNames);
-
+        Assert.Equal(expectedAccountIds.Length, displayNames.Count);
+        Assert.All(expectedAccountIds, accountId => Assert.Contains(accountId, displayNames.Keys));
     }
 }

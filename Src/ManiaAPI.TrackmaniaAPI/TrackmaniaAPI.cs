@@ -13,7 +13,7 @@ public interface ITrackmaniaAPI : IDisposable
     Task AuthorizeAsync(string clientId, string clientSecret, IEnumerable<string> scopes, CancellationToken cancellationToken = default);
     Task AuthorizeAsync(TrackmaniaAPICredentials credentials, CancellationToken cancellationToken = default);
     Task<ImmutableDictionary<string, Guid>> GetAccountIdsAsync(IEnumerable<string> displayNames, CancellationToken cancellationToken = default);
-    Task<ImmutableDictionary<string, Guid>> GetAccountIdsAsync(params string[] accountIds);
+    Task<ImmutableDictionary<string, Guid>> GetAccountIdsAsync(params string[] displayNames);
     Task<ImmutableDictionary<Guid, string>> GetDisplayNamesAsync(IEnumerable<Guid> accountIds, CancellationToken cancellationToken = default);
     Task<ImmutableDictionary<Guid, string>> GetDisplayNamesAsync(params Guid[] accountIds);
     Task<User> GetUserAsync(CancellationToken cancellationToken = default);
