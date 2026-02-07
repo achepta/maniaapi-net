@@ -87,10 +87,16 @@ public interface IManiaPlanetAPI : IDisposable
     /// <returns>Player.</returns>
     /// <exception cref="ManiaPlanetAPIResponseException">Status code is not 200-299.</exception>
     Task<Player> GetPlayerAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the list of title packs uploaded by the authorized player.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of titles.</returns>
+    Task<ImmutableList<Title>> GetTitlesAsync(CancellationToken cancellationToken = default);
     
     Task<ImmutableList<OnlineServer>> SearchOnlineServersAsync(string orderBy = "playerCount", string[]? titleUids = null, string[]? environments = null, string? scriptName = null, string? search = null, string? zone = null, bool onlyPublic = false, bool onlyPrivate = false, bool onlyLobby = false, bool excludeLobby = true, int offset = 0, int length = 10, CancellationToken cancellationToken = default);
     Task<Title?> GetTitleByUidAsync(string uid, CancellationToken cancellationToken = default);
-    Task<ImmutableList<Title>> GetTitlesAsync(CancellationToken cancellationToken = default);
     Task<ImmutableList<Title>> SearchTitlesAsync(string[]? filters = null, string? orderBy = "onlinePlayers", int offset = 0, int length = 10, CancellationToken cancellationToken = default);
     Task<ImmutableList<TitleScript>> GetTitleScriptsAsync(string uid, CancellationToken cancellationToken = default);
     Task<IEnumerable<string>> GetZonesAsync(CancellationToken cancellationToken = default);
@@ -189,6 +195,11 @@ public class ManiaPlanetAPI : IManiaPlanetAPI
         if (response.IsSuccessStatusCode)
         {
             return;
+        }
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+        {
+            throw new ManiaPlanetAPIResponseException("Forbidden", new HttpRequestException(response.ReasonPhrase, inner: null, response.StatusCode));
         }
 
         ErrorResponse? error;

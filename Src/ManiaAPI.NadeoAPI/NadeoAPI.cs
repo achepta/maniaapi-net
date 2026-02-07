@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 namespace ManiaAPI.NadeoAPI;
@@ -134,18 +135,18 @@ public abstract class NadeoAPI : INadeoAPI
             return;
         }
 
-        var errorStr = await response.Content.ReadAsStringAsync(cancellationToken);
+        ErrorResponse? error;
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            error = await response.Content.ReadFromJsonAsync(NadeoAPIJsonContext.Default.ErrorResponse, cancellationToken);
         }
-        catch (HttpRequestException ex)
+        catch (JsonException)
         {
-            throw new NadeoAPIResponseException(errorStr, inner: ex);
+            error = null;
         }
 
-        throw new NadeoAPIResponseException(errorStr);
+        throw new NadeoAPIResponseException(error, new HttpRequestException(response.ReasonPhrase, inner: null, response.StatusCode));
     }
 
     internal async Task SaveTokenResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
