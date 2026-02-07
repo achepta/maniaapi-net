@@ -8,8 +8,8 @@ public interface INadeoServices : INadeoAPI
     Task<ImmutableList<Account>> GetAccountDisplayNamesAsync(IEnumerable<Guid> accountIds, CancellationToken cancellationToken = default);
     [Obsolete("Use ManiaAPI.TrackmaniaAPI to get the display names instead.")]
     Task<ImmutableList<Account>> GetAccountDisplayNamesAsync(params Guid[] accountIds);
-    Task<ImmutableList<MapRecord>> GetMapRecordsAsync(IEnumerable<Guid> accountIds, IEnumerable<Guid> mapIds, CancellationToken cancellationToken = default);
-	Task<ImmutableList<MapRecord>> GetMapRecordsAsync(IEnumerable<Guid> accountIds, Guid mapId, CancellationToken cancellationToken = default);
+    Task<ImmutableList<MapRecord>> GetMapRecordsAsync(IEnumerable<Guid> accountIds, IEnumerable<Guid> mapIds, string? seasonId = null, string? gamemode = null, CancellationToken cancellationToken = default);
+	Task<ImmutableList<MapRecord>> GetMapRecordsAsync(IEnumerable<Guid> accountIds, Guid mapId, string? seasonId = null, string? gamemode = null, CancellationToken cancellationToken = default);
 	Task<ImmutableList<MapRecord>> GetMapRecordsByIdsAsync(IEnumerable<Guid> mapRecordIds, CancellationToken cancellationToken = default);
     Task<ImmutableList<MapRecord>> GetMapRecordsByIdsAsync(params Guid[] mapRecordIds);
     [Obsolete("Use GetAccountRecordsByMapIdsAsync or GetAccountRecordsBySeasonIdsAsync instead.")]
@@ -47,19 +47,19 @@ public class NadeoServices : NadeoAPI, INadeoServices
     {
 	}
 
-	public virtual async Task<ImmutableList<MapRecord>> GetMapRecordsAsync(IEnumerable<Guid> accountIds, Guid mapId, CancellationToken cancellationToken = default)
+	public virtual async Task<ImmutableList<MapRecord>> GetMapRecordsAsync(IEnumerable<Guid> accountIds, Guid mapId, string? seasonId = null, string? gamemode = null, CancellationToken cancellationToken = default)
 	{
-		return await GetJsonAsync($"v2/mapRecords/by-account/?accountIdList={string.Join(',', accountIds)}&mapId={mapId}",
+		return await GetJsonAsync($"v2/mapRecords/by-account/?accountIdList={string.Join(',', accountIds)}&mapId={mapId}{(seasonId is null ? null : $"&seasonId={seasonId}")}{(gamemode is null ? null : $"&gameMode={gamemode}")}",
 			NadeoAPIJsonContext.Default.ImmutableListMapRecord, cancellationToken);
 	}
 
-	public virtual async Task<ImmutableList<MapRecord>> GetMapRecordsAsync(IEnumerable<Guid> accountIds, IEnumerable<Guid> mapIds, CancellationToken cancellationToken = default)
+	public virtual async Task<ImmutableList<MapRecord>> GetMapRecordsAsync(IEnumerable<Guid> accountIds, IEnumerable<Guid> mapIds, string? seasonId = null, string? gamemode = null, CancellationToken cancellationToken = default)
     {
         var records = ImmutableList.CreateBuilder<MapRecord>();
 
         foreach (var mapId in mapIds)
 		{
-			records.AddRange(await GetMapRecordsAsync(accountIds, mapId, cancellationToken));
+			records.AddRange(await GetMapRecordsAsync(accountIds, mapId, seasonId, gamemode, cancellationToken));
 		}
 
         return records.ToImmutable();
