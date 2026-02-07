@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -38,6 +38,11 @@ jobs:
         dotnet user-secrets -p Tests/ManiaAPI.TrackmaniaAPI.Tests --id d864cd9f-edad-4ebf-b6e2-9c0c91bd62f8 set "ClientId" "${{ secrets.TRACKMANIA_API_CLIENTID }}"
         dotnet user-secrets -p Tests/ManiaAPI.TrackmaniaAPI.Tests --id d864cd9f-edad-4ebf-b6e2-9c0c91bd62f8 set "ClientSecret" "${{ secrets.TRACKMANIA_API_CLIENTSECRET }}"
     
+    - name: Set ManiaPlanet API secrets
+      run: |
+        dotnet user-secrets -p Tests/ManiaAPI.ManiaPlanetAPI.Tests --id 30cef84f-5408-4999-896b-5fcf61a115fc set "ClientId" "${{ secrets.MANIAPLANET_API_CLIENTID }}"
+        dotnet user-secrets -p Tests/ManiaAPI.ManiaPlanetAPI.Tests --id 30cef84f-5408-4999-896b-5fcf61a115fc set "ClientSecret" "${{ secrets.MANIAPLANET_API_CLIENTSECRET }}"
+
     - name: Build
       run: dotnet build -c Release --no-restore /p:ContinuousIntegrationBuild=true
       
