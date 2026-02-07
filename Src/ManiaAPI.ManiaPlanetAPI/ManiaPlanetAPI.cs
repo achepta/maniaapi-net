@@ -87,10 +87,16 @@ public interface IManiaPlanetAPI : IDisposable
     /// <returns>Player.</returns>
     /// <exception cref="ManiaPlanetAPIResponseException">Status code is not 200-299.</exception>
     Task<Player> GetPlayerAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the list of title packs uploaded by the authorized player.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of titles.</returns>
+    Task<ImmutableList<Title>> GetTitlesAsync(CancellationToken cancellationToken = default);
     
     Task<ImmutableList<OnlineServer>> SearchOnlineServersAsync(string orderBy = "playerCount", string[]? titleUids = null, string[]? environments = null, string? scriptName = null, string? search = null, string? zone = null, bool onlyPublic = false, bool onlyPrivate = false, bool onlyLobby = false, bool excludeLobby = true, int offset = 0, int length = 10, CancellationToken cancellationToken = default);
     Task<Title?> GetTitleByUidAsync(string uid, CancellationToken cancellationToken = default);
-    Task<ImmutableList<Title>> GetTitlesAsync(CancellationToken cancellationToken = default);
     Task<ImmutableList<Title>> SearchTitlesAsync(string[]? filters = null, string? orderBy = "onlinePlayers", int offset = 0, int length = 10, CancellationToken cancellationToken = default);
     Task<ImmutableList<TitleScript>> GetTitleScriptsAsync(string uid, CancellationToken cancellationToken = default);
     Task<IEnumerable<string>> GetZonesAsync(CancellationToken cancellationToken = default);
@@ -125,7 +131,7 @@ public class ManiaPlanetAPI : IManiaPlanetAPI
         Handler = handler ?? throw new ArgumentNullException(nameof(handler));
         AutomaticallyAuthorize = automaticallyAuthorize;
 
-        Client.DefaultRequestHeaders.UserAgent.ParseAdd("ManiaAPI.NET/2.5.1 (ManiaPlanetAPI; Email=petrpiv1@gmail.com; Discord=bigbang1112)");
+        Client.DefaultRequestHeaders.UserAgent.ParseAdd("ManiaAPI.NET/2.6.0 (ManiaPlanetAPI; Email=petrpiv1@gmail.com; Discord=bigbang1112)");
     }
 
     /// <summary>
@@ -191,6 +197,11 @@ public class ManiaPlanetAPI : IManiaPlanetAPI
             return;
         }
 
+        if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+        {
+            throw new ManiaPlanetAPIResponseException("Forbidden", new HttpRequestException(response.ReasonPhrase, inner: null, response.StatusCode));
+        }
+
         ErrorResponse? error;
 
         try
@@ -244,6 +255,15 @@ public class ManiaPlanetAPI : IManiaPlanetAPI
         return zones.Select(x => x.Path);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="filters">Possible values: shootmania, trackmania, solo, multiplayer, matchmaking, environments</param>
+    /// <param name="orderBy">Possible values: onlinePlayers, lastUpdate, registrations, playersLast24h</param>
+    /// <param name="offset"></param>
+    /// <param name="length"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public virtual async Task<ImmutableList<Title>> SearchTitlesAsync(
         string[]? filters = null, 
         string? orderBy = "onlinePlayers", 
@@ -256,11 +276,14 @@ public class ManiaPlanetAPI : IManiaPlanetAPI
 
         if (filters is not null)
         {
-            sb.Append(first ? '?' : '&');
-            first = false;
+            foreach (var filter in filters)
+            {
+                sb.Append(first ? '?' : '&');
+                first = false;
 
-            sb.Append("filters[]=");
-            sb.Append(string.Join(",", filters));
+                sb.Append("filters%5b%5d=");
+                sb.Append(filter);
+            }
         }
 
         if (orderBy is not null and not "onlinePlayers")
@@ -304,6 +327,23 @@ public class ManiaPlanetAPI : IManiaPlanetAPI
         return await GetJsonAsync($"titles/{uid}/scripts", ManiaPlanetAPIJsonContext.Default.ImmutableListTitleScript, cancellationToken);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="orderBy">Possible values: playerCount, levelClass1</param>
+    /// <param name="titleUids"></param>
+    /// <param name="environments"></param>
+    /// <param name="scriptName"></param>
+    /// <param name="search"></param>
+    /// <param name="zone"></param>
+    /// <param name="onlyPublic"></param>
+    /// <param name="onlyPrivate"></param>
+    /// <param name="onlyLobby"></param>
+    /// <param name="excludeLobby"></param>
+    /// <param name="offset"></param>
+    /// <param name="length"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public virtual async Task<ImmutableList<OnlineServer>> SearchOnlineServersAsync(
         string orderBy = "playerCount",
         string[]? titleUids = null,
@@ -334,20 +374,26 @@ public class ManiaPlanetAPI : IManiaPlanetAPI
 
         if (titleUids is not null)
         {
-            sb.Append(first ? '?' : '&');
-            first = false;
+            foreach (var titleUid in titleUids)
+            {
+                sb.Append(first ? '?' : '&');
+                first = false;
 
-            sb.Append("titleUids[]=");
-            sb.Append(string.Join(",", titleUids));
+                sb.Append("titleUids[]=");
+                sb.Append(titleUid);
+            }
         }
 
         if (environments is not null)
         {
-            sb.Append(first ? '?' : '&');
-            first = false;
+            foreach (var environment in environments)
+            {
+                sb.Append(first ? '?' : '&');
+                first = false;
 
-            sb.Append("environments[]=");
-            sb.Append(string.Join(",", environments));
+                sb.Append("environments[]=");
+                sb.Append(environment);
+            }
         }
 
         if (scriptName is not null)

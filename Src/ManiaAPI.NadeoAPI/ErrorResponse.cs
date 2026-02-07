@@ -1,3 +1,5 @@
-﻿namespace ManiaAPI.NadeoAPI;
+﻿using System.Text.Json.Serialization;
 
-public sealed record ErrorResponse(string Message);
+namespace ManiaAPI.NadeoAPI;
+
+public sealed record ErrorResponse(string Code, [property: JsonPropertyName("correlation_id")] string CorrelationId, string Message, Dictionary<string, string> Info);

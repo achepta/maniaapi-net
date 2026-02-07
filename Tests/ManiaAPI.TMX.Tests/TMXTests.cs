@@ -1,4 +1,4 @@
-﻿using System.Threading;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -13,7 +13,9 @@ public class TMXTests
     {
         var tmx = new TMX(site);
         var replays = await tmx.GetReplaysAsync(new() { TrackId = trackId });
+        using var replayGbxResponse = await tmx.GetReplayGbxResponseAsync(replays.Results.First());
         Assert.NotEmpty(replays.Results);
+        Assert.NotNull(replayGbxResponse);
     }
 
     [Fact]
@@ -21,7 +23,11 @@ public class TMXTests
     {
         var tmx = new TMX(TmxSite.TMNF);
         var tracks = await tmx.SearchTracksAsync(new());
+        using var trackGbxResponse = await tmx.GetTrackGbxResponseAsync(tracks.Results.First());
+        using var trackThumbnailResponse = await tmx.GetTrackThumbnailResponseAsync(tracks.Results.First());
         Assert.NotEmpty(tracks.Results);
+        Assert.NotNull(trackGbxResponse);
+        Assert.NotNull(trackThumbnailResponse);
     }
 
     [Fact]

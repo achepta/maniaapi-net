@@ -81,9 +81,10 @@ For `NadeoLiveServices`:
 - **Edit club activities**
 - Get map info
 - Get map leaderboards
+- Get leaderboard positions by time
 - Get map medal records
 - Get seasonal campaigns
-- Get weekly shorts
+- Get weekly shorts and grands
 - Get TOTDs
 - Get club campaigns
 - Get club info
@@ -97,6 +98,7 @@ For `NadeoLiveServices`:
 For `NadeoMeetServices`:
 
 - Get the current Cup of the Day
+- Get various Cups of the Day
 
 ### Setup for a single service
 
@@ -300,8 +302,10 @@ Wraps https://maniaplanet.com/swagger (ManiaPlanet web API). This API does not r
 - [All available on Swagger](https://maniaplanet.com/swagger)
 - Couple of ingame requests:
   - Authenticating a ManiaPlanet user via login and token
-  - Downloading a title pack
+  - Search title packs (contains more info than from WebServices)
   - Get title pack info (contains more info than from WebServices)
+  - Search online servers (if you have login and token, allows filtering by favorites)
+  - Downloading a title pack
 
 ### Setup
 
@@ -855,10 +859,11 @@ builder.Services.AddHttpClient<UnitedLadder>();
 
 Make sure you have these framework SDKs available:
 
+- .NET 10
 - .NET 9
 - .NET 8
 
-**Visual Studio 2022** should be able to install those with default installation settings. Using Visual Studio 2019 will not work.
+**Visual Studio 2026** should be able to install those with default installation settings. Using Visual Studio 2022 might work, but Visual Studio 2019 will not work.
 
 In Visual Studio, you can just use Build Solution and everything should build. JetBrains Rider has been tested and also works.
 

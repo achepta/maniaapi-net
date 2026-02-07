@@ -2,10 +2,10 @@
 
 	<PropertyGroup>
 		<PackageId>ManiaAPI.NadeoAPI</PackageId>
-		<Version>2.5.2</Version>
+		<Version>2.6.0</Version>
 		<Authors>BigBang1112</Authors>
 		<Description>Wrapper for the official in-game Nadeo API from Trackmania released in 2020. Part of the ManiaAPI.NET library set.</Description>
-		<Copyright>Copyright (c) 2022-2025 Petr Pivoňka</Copyright>
+		<Copyright>Copyright (c) 2022-2026 Petr Pivoňka</Copyright>
 		<PackageProjectUrl>https://github.com/BigBang1112/maniaapi-net</PackageProjectUrl>
 		<PackageIcon>logo_icon_outline.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -15,8 +15,8 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<TargetFrameworks>net9.0;net8.0</TargetFrameworks>
-		<LangVersion>13</LangVersion>
+		<TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+		<LangVersion>14</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<IsTrimmable>true</IsTrimmable>
@@ -41,7 +41,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="TmEssentials" Version="2.5.3" />
+		<PackageReference Include="TmEssentials" Version="2.6.0" />
 	</ItemGroup>
 
 	<ItemGroup>

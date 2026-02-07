@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
-using System.Threading;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -19,12 +20,55 @@ public class NadeoLiveServicesTests
         var login = configuration.GetValue<string>("DedicatedServer:Login") ?? throw new Exception("DedicatedServer:Login user secret is required");
         var password = configuration.GetValue<string>("DedicatedServer:Password") ?? throw new Exception("DedicatedServer:Password user secret is required");
 
-        INadeoLiveServices nadeoLiveServices = new NadeoLiveServices();
-        
-        // Act
-        await nadeoLiveServices.AuthorizeAsync(login, password, AuthorizationMethod.DedicatedServer);
+        var http = new HttpClient();
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("NadeoLiveServices Integration Test 1.0");
 
-        var result = await nadeoLiveServices.GetPlayerSeasonRankingsAsync(Guid.Parse("6a43df20-cd1a-4b3b-87b9-a6835a9b416d"), "ee54d6c5-954c-49b9-bd82-b51f8175b3f7");
-        // Assert
+#pragma warning disable CA1859
+        INadeoLiveServices nls = new NadeoLiveServices(http);
+#pragma warning restore CA1859
+
+        // Act
+        await nls.AuthorizeAsync(login, password, AuthorizationMethod.DedicatedServer);
+
+        var pubs = await nls.GetActiveManiapubsAsync();
+        var seasonalCampaigns = await nls.GetSeasonalCampaignsAsync(5);
+        var weeklyShortCampaigns = await nls.GetWeeklyShortCampaignsAsync(5);
+        var weeklyGrandCampaigns = await nls.GetWeeklyGrandCampaignsAsync(5);
+        var clubs = await nls.GetClubsAsync(5);
+        var clubCampaigns = await nls.GetClubCampaignsAsync(5);
+        var clubCompetitions = await nls.GetClubCompetitionsAsync(5);
+        var clubMapReviewRooms = await nls.GetClubMapReviewRoomsAsync(5);
+        var clubRooms = await nls.GetClubRoomsAsync(5);
+        var clubMaps = await nls.GetClubBucketsAsync(ClubBucketType.MapUpload, 5);
+        var clubSkins = await nls.GetClubBucketsAsync(ClubBucketType.SkinUpload, 5);
+        var clubItems = await nls.GetClubBucketsAsync(ClubBucketType.ItemUpload, 5);
+
+        var sampleGroupId = seasonalCampaigns.CampaignList.First().SeasonUid;
+        var sampleMapUids = seasonalCampaigns.CampaignList
+            .First()
+            .Playlist
+            .Select(m => m.MapUid)
+            .Take(5);
+
+        var mapInfos = await nls.GetMapInfosAsync(sampleMapUids);
+        var mapInfo = await nls.GetMapInfoAsync(sampleMapUids.First());
+        var mapMedalRecords = await nls.GetMapMedalRecordsAsync(sampleMapUids.First(), sampleGroupId);
+        var topLeaderboardGroup = await nls.GetTopLeaderboardAsync(sampleMapUids.First(), sampleGroupId);
+        var topLeaderboard = await nls.GetTopLeaderboardAsync(sampleMapUids.First());
+        var lbPositionByTimeGroup = await nls.GetLeaderboardPositionByTimeAsync(sampleMapUids.First(), sampleGroupId, topLeaderboard.Top.Top.First().Score.TotalMilliseconds);
+        var lbPositionByTime = await nls.GetLeaderboardPositionByTimeAsync(sampleMapUids.First(), topLeaderboard.Top.Top.First().Score.TotalMilliseconds);
+        var totds = await nls.GetTrackOfTheDaysAsync(5);
+        var totd = await nls.GetTrackOfTheDayInfoAsync(totds.MonthList.First().Days.First().MapUid);
+        var playerSeasonRankings = await nls.GetPlayerSeasonRankingsAsync(Guid.Parse("6a43df20-cd1a-4b3b-87b9-a6835a9b416d"), "ee54d6c5-954c-49b9-bd82-b51f8175b3f7");
+
+        var clubActivities = await nls.GetClubActivitiesAsync(clubs.ClubList.First().Id, 5);
+        var clubCampaign = await nls.GetClubCampaignAsync(clubCampaigns.ClubCampaignList.First().ClubId, clubCampaigns.ClubCampaignList.First().CampaignId);
+        var clubMembers = await nls.GetClubMembersAsync(clubs.ClubList.First().Id, 5);
+        var clubMember = await nls.GetClubMemberAsync(clubs.ClubList.First().Id, clubMembers.ClubMemberList.First().AccountId);
+        var clubRoom = await nls.GetClubRoomAsync(clubRooms.ClubRoomList.First().ClubId, clubRooms.ClubRoomList.First().Id);
+        var clubBucket = await nls.GetClubBucketAsync(clubMaps.ClubBucketList.First().ClubId, clubMaps.ClubBucketList.First().Id);
+        var clubPlayerInfo = await nls.GetClubPlayerInfoAsync();
+        var myClubs = await nls.GetMyClubsAsync(5);
+        var joinDaily = await nls.JoinDailyChannelAsync();
     }
 }

@@ -10,16 +10,23 @@ public interface INadeoLiveServices : INadeoAPI
     Task<MapInfoLive?> GetMapInfoAsync(string mapUid, CancellationToken cancellationToken = default);
     Task<ImmutableList<MapInfoLive>> GetMapInfosAsync(IEnumerable<string> mapUids, CancellationToken cancellationToken = default);
     Task<ImmutableList<MapInfoLive>> GetMapInfosAsync(params string[] mapUids);
-    Task<MedalRecordCollection> GetMapMedalRecordsAsync(string mapUid, string groupId, CancellationToken cancellationToken = default);
+    Task<MedalRecordCollection> GetMapMedalRecordsAsync(string mapUid, string groupUid, CancellationToken cancellationToken = default);
     Task<TopLeaderboardCollection> GetTopLeaderboardAsync(string mapUid, int length = 10, int offset = 0, bool onlyWorld = true, CancellationToken cancellationToken = default);
-    Task<TopLeaderboardCollection> GetTopLeaderboardAsync(string mapUid, string groupId, int length = 10, int offset = 0, bool onlyWorld = true, CancellationToken cancellationToken = default);
+    Task<TopLeaderboardCollection> GetTopLeaderboardAsync(string mapUid, string groupUid, int length = 10, int offset = 0, bool onlyWorld = true, CancellationToken cancellationToken = default);
+    Task<ImmutableList<Position>> GetLeaderboardPositionByTimeAsync(string mapUid, string groupUid, int score, CancellationToken cancellationToken = default);
+    Task<ImmutableList<Position>> GetLeaderboardPositionsByTimeAsync(IEnumerable<string> mapUids, IEnumerable<string> groupUids, IEnumerable<int> scores, CancellationToken cancellationToken = default);
+    Task<ImmutableList<Position>> GetLeaderboardPositionByTimeAsync(string mapUid, int score, CancellationToken cancellationToken = default);
+    Task<ImmutableList<Position>> GetLeaderboardPositionsByTimeAsync(IEnumerable<string> mapUids, IEnumerable<int> scores, CancellationToken cancellationToken = default);
     Task<TrackOfTheDayCollection> GetTrackOfTheDaysAsync(int length, int offset = 0, bool royal = false, CancellationToken cancellationToken = default);
     Task<TrackOfTheDayInfo> GetTrackOfTheDayInfoAsync(string mapUid, CancellationToken cancellationToken = default);
     Task<CampaignCollection> GetSeasonalCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default);
-    Task<SeasonPlayerRankingCollection> GetPlayerSeasonRankingsAsync(Guid accountId, string groupId, CancellationToken cancellationToken = default);
+    Task<SeasonPlayerRankingCollection> GetPlayerSeasonRankingsAsync(Guid accountId, string groupUid, CancellationToken cancellationToken = default);
+    [Obsolete("Use GetWeeklyShortCampaignsAsync instead.")]
     Task<CampaignCollection> GetWeeklyCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default);
+    Task<CampaignCollection> GetWeeklyShortCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default);
+    Task<CampaignCollection> GetWeeklyGrandCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default);
     Task<ClubMember> GetClubMemberAsync(int clubId, Guid accountId, CancellationToken cancellationToken = default);
-    Task<ClubMember> GetClubMemberAsync(int clubId, string diplayName, CancellationToken cancellationToken = default);
+    Task<ClubMember> GetClubMemberAsync(int clubId, string displayName, CancellationToken cancellationToken = default);
     Task<ClubActivityCollection> GetClubActivitiesAsync(int clubId, int length, int offset = 0, bool active = true, int folderId = 0, CancellationToken cancellationToken = default);
     Task<Club> GetClubAsync(int clubId, CancellationToken cancellationToken = default);
     Task<ClubCampaign> GetClubCampaignAsync(int clubId, int campaignId, CancellationToken cancellationToken = default);
@@ -61,7 +68,8 @@ public class NadeoLiveServices : NadeoAPI, INadeoLiveServices
     public override string Audience => nameof(NadeoLiveServices);
     public override string BaseAddress => "https://live-services.trackmania.nadeo.live/api";
 
-    public NadeoLiveServices(HttpClient client, NadeoAPIHandler handler, bool automaticallyAuthorize = true) : base(client, handler, automaticallyAuthorize)
+    public NadeoLiveServices(HttpClient client, NadeoAPIHandler? handler = null, bool automaticallyAuthorize = true)
+        : base(client, handler ?? new NadeoAPIHandler(), automaticallyAuthorize)
     {
     }
 
@@ -71,6 +79,8 @@ public class NadeoLiveServices : NadeoAPI, INadeoLiveServices
 
     public virtual async Task<MapInfoLive?> GetMapInfoAsync(string mapUid, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(mapUid);
+
         try
         {
             return await GetJsonAsync($"token/map/{mapUid}", NadeoAPIJsonContext.Default.MapInfoLive, cancellationToken);
@@ -94,14 +104,57 @@ public class NadeoLiveServices : NadeoAPI, INadeoLiveServices
 
     public virtual async Task<TopLeaderboardCollection> GetTopLeaderboardAsync(string mapUid, int length = 10, int offset = 0, bool onlyWorld = true, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(mapUid);
+
         return await GetJsonAsync($"token/leaderboard/group/Personal_Best/map/{mapUid}/top?length={length}&offset={offset}&onlyWorld={onlyWorld}",
             NadeoAPIJsonContext.Default.TopLeaderboardCollection, cancellationToken);
     }
 
-    public virtual async Task<TopLeaderboardCollection> GetTopLeaderboardAsync(string mapUid, string groupId, int length = 10, int offset = 0, bool onlyWorld = true, CancellationToken cancellationToken = default)
+    public virtual async Task<TopLeaderboardCollection> GetTopLeaderboardAsync(string mapUid, string groupUid, int length = 10, int offset = 0, bool onlyWorld = true, CancellationToken cancellationToken = default)
     {
-        return await GetJsonAsync($"token/leaderboard/group/{groupId}/map/{mapUid}/top?length={length}&offset={offset}&onlyWorld={onlyWorld}",
+        ArgumentException.ThrowIfNullOrEmpty(groupUid);
+
+        return await GetJsonAsync($"token/leaderboard/group/{groupUid}/map/{mapUid}/top?length={length}&offset={offset}&onlyWorld={onlyWorld}",
             NadeoAPIJsonContext.Default.TopLeaderboardCollection, cancellationToken);
+    }
+
+    public async Task<ImmutableList<Position>> GetLeaderboardPositionByTimeAsync(string mapUid, string groupUid, int score, CancellationToken cancellationToken = default)
+    {
+        return await GetLeaderboardPositionsByTimeAsync([mapUid], [groupUid], [score], cancellationToken);
+    }
+
+    public async Task<ImmutableList<Position>> GetLeaderboardPositionByTimeAsync(string mapUid, int score, CancellationToken cancellationToken = default)
+    {
+        return await GetLeaderboardPositionByTimeAsync(mapUid, "Personal_Best", score, cancellationToken);
+    }
+
+    public async Task<ImmutableList<Position>> GetLeaderboardPositionsByTimeAsync(IEnumerable<string> mapUids, IEnumerable<int> scores, CancellationToken cancellationToken = default)
+    {
+        return await GetLeaderboardPositionsByTimeAsync(mapUids, ["Personal_Best"], scores, cancellationToken);
+    }
+
+    public virtual async Task<ImmutableList<Position>> GetLeaderboardPositionsByTimeAsync(IEnumerable<string> mapUids, IEnumerable<string> groupUids, IEnumerable<int> scores, CancellationToken cancellationToken = default)
+    {
+        var body = new MapGroupIdCollection(mapUids
+            .Zip(groupUids, (mapUid, groupUid) =>
+                new MapGroupId(mapUid, groupUid))
+            .ToImmutableList());
+        var jsonContent = JsonContent.Create(body, NadeoAPIJsonContext.Default.MapGroupIdCollection);
+        
+        var queryParams = mapUids
+            .Zip(scores, (mapUid, score) =>
+                $"scores[{mapUid}]={score}")
+            .Aggregate((a, b) => $"{a}&{b}");
+        
+        try
+        {
+            return await PostJsonAsync($"token/leaderboard/group/map?{queryParams}", jsonContent, 
+                NadeoAPIJsonContext.Default.ImmutableListPosition, cancellationToken);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return [];
+        }
     }
 
     public virtual async Task<ImmutableList<Maniapub>> GetActiveManiapubsAsync(CancellationToken cancellationToken = default)
@@ -109,14 +162,19 @@ public class NadeoLiveServices : NadeoAPI, INadeoLiveServices
         return (await GetJsonAsync($"token/advertising/display/active", NadeoAPIJsonContext.Default.ManiapubCollection, cancellationToken)).DisplayList;
     }
 
-    public virtual async Task<MedalRecordCollection> GetMapMedalRecordsAsync(string mapUid, string groupId, CancellationToken cancellationToken = default)
+    public virtual async Task<MedalRecordCollection> GetMapMedalRecordsAsync(string mapUid, string groupUid, CancellationToken cancellationToken = default)
     {
-        return await GetJsonAsync($"token/leaderboard/group/{groupId}/map/{mapUid}/medals",
+        ArgumentException.ThrowIfNullOrEmpty(mapUid);
+        ArgumentException.ThrowIfNullOrEmpty(groupUid);
+
+        return await GetJsonAsync($"token/leaderboard/group/{groupUid}/map/{mapUid}/medals",
             NadeoAPIJsonContext.Default.MedalRecordCollection, cancellationToken);
     }
 
     public virtual async Task<MedalRecordCollection> GetMapMedalRecordsAsync(string mapUid, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(mapUid);
+
         return await GetJsonAsync($"token/leaderboard/group/Personal_Best/map/{mapUid}/medals",
             NadeoAPIJsonContext.Default.MedalRecordCollection, cancellationToken);
     }
@@ -129,6 +187,8 @@ public class NadeoLiveServices : NadeoAPI, INadeoLiveServices
 
     public virtual async Task<TrackOfTheDayInfo> GetTrackOfTheDayInfoAsync(string mapUid, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(mapUid);
+
         return await GetJsonAsync($"campaign/map/{mapUid}", NadeoAPIJsonContext.Default.TrackOfTheDayInfo, cancellationToken);
     }
 
@@ -138,15 +198,29 @@ public class NadeoLiveServices : NadeoAPI, INadeoLiveServices
             NadeoAPIJsonContext.Default.CampaignCollection, cancellationToken);
     }
 
-    public virtual async Task<SeasonPlayerRankingCollection> GetPlayerSeasonRankingsAsync(Guid accountId, string groupId, CancellationToken cancellationToken = default)
+    public virtual async Task<SeasonPlayerRankingCollection> GetPlayerSeasonRankingsAsync(Guid accountId, string groupUid, CancellationToken cancellationToken = default)
     {
-        return await GetJsonAsync($"token/leaderboard/group/{groupId}?accountId={accountId}",
+        ArgumentException.ThrowIfNullOrEmpty(groupUid);
+
+        return await GetJsonAsync($"token/leaderboard/group/{groupUid}?accountId={accountId}",
             NadeoAPIJsonContext.Default.SeasonPlayerRankingCollection, cancellationToken);
     }
 
+    [Obsolete("Use GetWeeklyShortCampaignsAsync instead.")]
     public virtual async Task<CampaignCollection> GetWeeklyCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default)
     {
+        return await GetWeeklyShortCampaignsAsync(length, offset, cancellationToken);
+    }
+
+    public virtual async Task<CampaignCollection> GetWeeklyShortCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default)
+    {
         return await GetJsonAsync($"campaign/weekly-shorts?offset={offset}&length={length}",
+            NadeoAPIJsonContext.Default.CampaignCollection, cancellationToken);
+    }
+
+    public virtual async Task<CampaignCollection> GetWeeklyGrandCampaignsAsync(int length, int offset = 0, CancellationToken cancellationToken = default)
+    {
+        return await GetJsonAsync($"campaign/weekly-grands?offset={offset}&length={length}",
             NadeoAPIJsonContext.Default.CampaignCollection, cancellationToken);
     }
 
@@ -156,9 +230,11 @@ public class NadeoLiveServices : NadeoAPI, INadeoLiveServices
             NadeoAPIJsonContext.Default.ClubMember, cancellationToken);
     }
 
-    public virtual async Task<ClubMember> GetClubMemberAsync(int clubId, string diplayName, CancellationToken cancellationToken = default)
+    public virtual async Task<ClubMember> GetClubMemberAsync(int clubId, string displayName, CancellationToken cancellationToken = default)
     {
-        return await GetJsonAsync($"token/club/{clubId}/member/{diplayName}/from-login",
+        ArgumentException.ThrowIfNullOrEmpty(displayName);
+
+        return await GetJsonAsync($"token/club/{clubId}/member/{displayName}/from-login",
             NadeoAPIJsonContext.Default.ClubMember, cancellationToken);
     }
 
@@ -273,6 +349,8 @@ public class NadeoLiveServices : NadeoAPI, INadeoLiveServices
 
     public virtual async Task<ClubActivity> CreateClubFolderAsync(int clubId, string folderName, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(folderName);
+
         var jsonContent = JsonContent.Create(new ClubFolder(folderName, FolderId: 0), NadeoAPIJsonContext.Default.ClubFolder);
         return await PostJsonAsync($"token/club/{clubId}/folder/create", jsonContent, NadeoAPIJsonContext.Default.ClubActivity, cancellationToken: cancellationToken);
     }

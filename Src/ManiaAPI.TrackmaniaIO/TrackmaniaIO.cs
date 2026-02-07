@@ -11,10 +11,16 @@ public interface ITrackmaniaIO : IDisposable
 
     Task<CampaignCollection> GetSeasonalCampaignsAsync(int page = 0, CancellationToken cancellationToken = default);
     Task<CampaignCollection> GetClubCampaignsAsync(int page = 0, CancellationToken cancellationToken = default);
+    [Obsolete("Use GetWeeklyShortCampaignsAsync instead.")]
     Task<CampaignCollection> GetWeeklyCampaignsAsync(int page = 0, CancellationToken cancellationToken = default);
+    Task<CampaignCollection> GetWeeklyShortCampaignsAsync(int page = 0, CancellationToken cancellationToken = default);
+    Task<CampaignCollection> GetWeeklyGrandCampaignsAsync(int page = 0, CancellationToken cancellationToken = default);
     Task<Campaign> GetSeasonalCampaignAsync(int campaignId, CancellationToken cancellationToken = default);
     Task<Campaign> GetClubCampaignAsync(int clubId, int campaignId, CancellationToken cancellationToken = default);
+    [Obsolete("Use GetWeeklyShortCampaignsAsync instead.")]
     Task<Campaign> GetWeeklyCampaignAsync(int campaignId, CancellationToken cancellationToken = default);
+    Task<Campaign> GetWeeklyShortCampaignAsync(int campaignId, CancellationToken cancellationToken = default);
+    Task<Campaign> GetWeeklyGrandCampaignAsync(int campaignId, CancellationToken cancellationToken = default);
     Task<Leaderboard> GetLeaderboardAsync(string leaderboardUid, string mapUid, CancellationToken cancellationToken = default);
     Task<Leaderboard> GetLeaderboardAsync(string mapUid, int offset = 0, int length = 15, CancellationToken cancellationToken = default);
     Task<ImmutableList<WorldRecord>> GetRecentWorldRecordsAsync(string leaderboardUid, CancellationToken cancellationToken = default);
@@ -51,7 +57,7 @@ public class TrackmaniaIO : ITrackmaniaIO
 
         Client = client ?? throw new ArgumentNullException(nameof(client));
         Client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
-        Client.DefaultRequestHeaders.UserAgent.ParseAdd("ManiaAPI.NET/2.5.0 (TrackmaniaIO; Discord=bigbang1112)");
+        Client.DefaultRequestHeaders.UserAgent.ParseAdd("ManiaAPI.NET/2.6.0 (TrackmaniaIO; Discord=bigbang1112)");
     }
 
     /// <summary>
@@ -73,9 +79,20 @@ public class TrackmaniaIO : ITrackmaniaIO
         return await GetJsonAsync($"campaigns/club/{page}", TrackmaniaIOJsonContext.Default.CampaignCollection, cancellationToken);
     }
 
+    [Obsolete("Use GetWeeklyShortCampaignsAsync instead.")]
     public virtual async Task<CampaignCollection> GetWeeklyCampaignsAsync(int page = 0, CancellationToken cancellationToken = default)
     {
-        return await GetJsonAsync($"campaigns/weekly/{page}", TrackmaniaIOJsonContext.Default.CampaignCollection, cancellationToken);
+        return await GetWeeklyShortCampaignsAsync(page, cancellationToken);
+    }
+
+    public virtual async Task<CampaignCollection> GetWeeklyShortCampaignsAsync(int page = 0, CancellationToken cancellationToken = default)
+    {
+        return await GetJsonAsync($"campaigns/weeklyshorts/{page}", TrackmaniaIOJsonContext.Default.CampaignCollection, cancellationToken);
+    }
+
+    public virtual async Task<CampaignCollection> GetWeeklyGrandCampaignsAsync(int page = 0, CancellationToken cancellationToken = default)
+    {
+        return await GetJsonAsync($"campaigns/weeklygrands/{page}", TrackmaniaIOJsonContext.Default.CampaignCollection, cancellationToken);
     }
 
     public virtual async Task<Campaign> GetSeasonalCampaignAsync(int campaignId, CancellationToken cancellationToken = default)
@@ -88,9 +105,20 @@ public class TrackmaniaIO : ITrackmaniaIO
         return await GetJsonAsync($"campaign/{clubId}/{campaignId}", TrackmaniaIOJsonContext.Default.Campaign, cancellationToken);
     }
 
+    [Obsolete("Use GetWeeklyShortCampaignAsync instead.")]
     public virtual async Task<Campaign> GetWeeklyCampaignAsync(int campaignId, CancellationToken cancellationToken = default)
     {
-        return await GetJsonAsync($"campaign/weekly/{campaignId}", TrackmaniaIOJsonContext.Default.Campaign, cancellationToken);
+        return await GetWeeklyShortCampaignAsync(campaignId, cancellationToken);
+    }
+
+    public virtual async Task<Campaign> GetWeeklyShortCampaignAsync(int campaignId, CancellationToken cancellationToken = default)
+    {
+        return await GetJsonAsync($"campaign/weeklyshorts/{campaignId}", TrackmaniaIOJsonContext.Default.Campaign, cancellationToken);
+    }
+
+    public virtual async Task<Campaign> GetWeeklyGrandCampaignAsync(int campaignId, CancellationToken cancellationToken = default)
+    {
+        return await GetJsonAsync($"campaign/weeklygrands/{campaignId}", TrackmaniaIOJsonContext.Default.Campaign, cancellationToken);
     }
 
     public virtual async Task<Leaderboard> GetLeaderboardAsync(string leaderboardUid, string mapUid, CancellationToken cancellationToken = default)

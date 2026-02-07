@@ -2,7 +2,7 @@
 
 namespace ManiaAPI.NadeoAPI;
 
-public sealed record ClubBucketItem(Guid ItemId,
+public sealed record ClubBucketItem(string ItemId,
                                     int Position,
                                     string Description,
                                     ImmutableList<string> MediaUrls,

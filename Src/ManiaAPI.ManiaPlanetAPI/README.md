@@ -9,8 +9,10 @@ Wraps https://maniaplanet.com/swagger (ManiaPlanet web API). This API does not r
 - [All available on Swagger](https://maniaplanet.com/swagger)
 - Couple of ingame requests:
   - Authenticating a ManiaPlanet user via login and token
-  - Downloading a title pack
+  - Search title packs (contains more info than from WebServices)
   - Get title pack info (contains more info than from WebServices)
+  - Search online servers (if you have login and token, allows filtering by favorites)
+  - Downloading a title pack
 
 ## Setup
 

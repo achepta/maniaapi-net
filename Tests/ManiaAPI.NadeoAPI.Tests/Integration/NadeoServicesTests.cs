@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -17,25 +19,52 @@ public class NadeoServicesTests
 
         var login = configuration.GetValue<string>("DedicatedServer:Login") ?? throw new Exception("DedicatedServer:Login user secret is required");
         var password = configuration.GetValue<string>("DedicatedServer:Password") ?? throw new Exception("DedicatedServer:Password user secret is required");
-
-        var nadeoServices = new NadeoServices();
         
+        var http = new HttpClient();
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("NadeoServices Integration Test 1.0");
+
+#pragma warning disable CA1859
+        INadeoServices ns = new NadeoServices(http);
+#pragma warning restore CA1859
+
         var accountList = new Guid[]
         {
-            Guid.Parse("6a43df20-cd1a-4b3b-87b9-a6835a9b416d"),
-            Guid.Parse("faedcf21-d61a-4305-9ffe-680b2ee5d65e")
+            Guid.Parse("4a983dc3-a938-4564-8a1c-8be20779f069"),
+            Guid.Parse("5dda004f-add9-43ad-b9cd-7a90101aa8f2")
         };
 
         var mapIds = new Guid[]
         {
-            Guid.Parse("df781bdb-6f9a-4efc-855b-dbef446e1b8a"),
-            Guid.Parse("db589f15-ef00-4de4-b3ee-9383f1a1eecf")
+            Guid.Parse("ed53486f-a80d-419b-b073-54bb8944d502"),
+            Guid.Parse("e8a02ba9-f418-463d-8a83-ac5fc465ca8a")
         };
 
         // Act
-        await nadeoServices.AuthorizeAsync(login, password, AuthorizationMethod.DedicatedServer);
+        await ns.AuthorizeAsync(login, password, AuthorizationMethod.DedicatedServer);
 
-        // Assert
-        //var stuff = await nadeoServices.GetPlayerClubTagsAsync(accountList);
+        var zones = await ns.GetZonesAsync();
+        var mapRecords = await ns.GetMapRecordsAsync(accountList, mapIds);
+        var mapRecordsByIds = await ns.GetMapRecordsByIdsAsync(mapRecords.Select(x => x.MapRecordId));
+
+        // works only on player account
+        await Assert.ThrowsAsync<NadeoAPIResponseException>(() => ns.GetAccountRecordsByMapIdsAsync(accountList.First(), mapIds));
+        await Assert.ThrowsAsync<NadeoAPIResponseException>(() => ns.GetAccountRecordsBySeasonIdsAsync(accountList.First(), [Guid.Parse("dccdf820-6a24-4ab1-9078-58fea41282db")]));
+        
+        var mapRecordById = await ns.GetMapRecordByIdAsync(mapRecords.First().MapRecordId);
+        var playerZones = await ns.GetPlayerZonesAsync(accountList.First());
+        var clientApiRoutes = await ns.GetApiRoutesAsync(ApiUsage.Client);
+        var serverApiRoutes = await ns.GetApiRoutesAsync(ApiUsage.Server);
+
+        await Assert.ThrowsAsync<NadeoAPIResponseException>(() => ns.GetPlayerClubTagsAsync(accountList.First())); // works only on player account
+
+        var mapInfoById = await ns.GetMapInfoAsync(mapIds.First());
+        var mapInfosByIds = await ns.GetMapInfosAsync(mapIds);
+        var mapInfoByUid = await ns.GetMapInfoAsync(mapInfoById!.MapUid);
+        var mapInfosByUids = await ns.GetMapInfosAsync(mapInfosByIds.Select(x => x.MapUid));
+        var playerWebIdentities = await ns.GetPlayerWebIdentitiesAsync(accountList.First());
+
+        await Assert.ThrowsAsync<NadeoAPIResponseException>(() => ns.GetMapsByAuthorAsync()); // needs authentication with a player account
+
+        await Assert.ThrowsAsync<NadeoAPIResponseException>(() => ns.GetSkinInfoAsync(Guid.Parse("a1d4ec7c-a05a-4eb0-9873-c1f5840e4523"))); // works only on player account
     }
 }

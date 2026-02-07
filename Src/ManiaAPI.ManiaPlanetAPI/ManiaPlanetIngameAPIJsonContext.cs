@@ -1,8 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Immutable;
+using System.Text.Json.Serialization;
 
 namespace ManiaAPI.ManiaPlanetAPI;
 
 [JsonSerializable(typeof(ManiaPlanetIngameAuthResponse))]
-[JsonSerializable(typeof(IngameTitle))]
+[JsonSerializable(typeof(ImmutableList<IngameTitle>))]
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 internal sealed partial class ManiaPlanetIngameAPIJsonContext : JsonSerializerContext;
