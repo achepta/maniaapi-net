@@ -14,14 +14,41 @@ public interface INadeoServices : INadeoAPI
     Task<ImmutableList<MapRecord>> GetMapRecordsByIdsAsync(params Guid[] mapRecordIds);
     [Obsolete("Use GetAccountRecordsByMapIdsAsync or GetAccountRecordsBySeasonIdsAsync instead.")]
     Task<ImmutableList<MapRecord>> GetAccountRecordsAsync(Guid accountId, string? gamemode = null, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// This request requires authentication through Ubisoft account.
+    /// </summary>
+    /// <param name="accountId"></param>
+    /// <param name="mapIds"></param>
+    /// <param name="gamemode"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task<ImmutableList<MapRecord>> GetAccountRecordsByMapIdsAsync(Guid accountId, IEnumerable<Guid> mapIds, string? gamemode = null, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// This request requires authentication through Ubisoft account.
+    /// </summary>
+    /// <param name="accountId"></param>
+    /// <param name="seasonIds"></param>
+    /// <param name="gamemode"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task<ImmutableList<MapRecord>> GetAccountRecordsBySeasonIdsAsync(Guid accountId, IEnumerable<Guid> seasonIds, string? gamemode = null, CancellationToken cancellationToken = default);
     Task<MapRecord> GetMapRecordByIdAsync(Guid mapRecordId, CancellationToken cancellationToken = default);
     Task<ImmutableList<PlayerZone>> GetPlayerZonesAsync(IEnumerable<Guid> accountIds, CancellationToken cancellationToken = default);
     Task<ImmutableList<PlayerZone>> GetPlayerZonesAsync(params Guid[] accountIds);
     Task<Dictionary<string, ApiRoute>> GetApiRoutesAsync(ApiUsage usage, CancellationToken cancellationToken = default);
     Task<ImmutableList<Zone>> GetZonesAsync(CancellationToken cancellationToken = default);
+    /// <summary>
+    /// This request requires authentication through Ubisoft account.
+    /// </summary>
+    /// <param name="accountIds"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task<ImmutableList<PlayerClubTag>> GetPlayerClubTagsAsync(IEnumerable<Guid> accountIds, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// This request requires authentication through Ubisoft account.
+    /// </summary>
+    /// <param name="accountIds"></param>
+    /// <returns></returns>
     Task<ImmutableList<PlayerClubTag>> GetPlayerClubTagsAsync(params Guid[] accountIds);
     Task<MapInfo?> GetMapInfoAsync(Guid mapId, CancellationToken cancellationToken = default);
     Task<ImmutableList<MapInfo>> GetMapInfosAsync(IEnumerable<Guid> mapIds, CancellationToken cancellationToken = default);
@@ -29,7 +56,18 @@ public interface INadeoServices : INadeoAPI
     Task<ImmutableList<MapInfo>> GetMapInfosAsync(IEnumerable<string> mapUids, CancellationToken cancellationToken = default);
     Task<ImmutableList<WebIdentity>> GetPlayerWebIdentitiesAsync(IEnumerable<Guid> accountIds, CancellationToken cancellationToken = default);
     Task<ImmutableList<WebIdentity>> GetPlayerWebIdentitiesAsync(params Guid[] accountIds);
-    Task<MapInfoCollection> GetMapsByAuthor(CancellationToken cancellationToken = default);
+    /// <summary>
+    /// This request requires authentication through Ubisoft account.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<MapInfoCollection> GetMapsByAuthorAsync(CancellationToken cancellationToken = default);
+    /// <summary>
+    /// This request requires authentication through Ubisoft account.
+    /// </summary>
+    /// <param name="skinId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task<SkinInfo> GetSkinInfoAsync(Guid skinId, CancellationToken cancellationToken = default);
 }
 
@@ -176,7 +214,7 @@ public class NadeoServices : NadeoAPI, INadeoServices
         return await GetPlayerWebIdentitiesAsync(accountIds, CancellationToken.None);
     }
 
-    public async Task<MapInfoCollection> GetMapsByAuthor(CancellationToken cancellationToken = default)
+    public async Task<MapInfoCollection> GetMapsByAuthorAsync(CancellationToken cancellationToken = default)
     {
         return await GetJsonAsync("maps/by-author", NadeoAPIJsonContext.Default.MapInfoCollection, cancellationToken);
     }
