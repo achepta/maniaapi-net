@@ -33,7 +33,7 @@ For `NadeoLiveServices`:
 - Get leaderboard positions by time
 - Get map medal records
 - Get seasonal campaigns
-- Get weekly shorts
+- Get weekly shorts and grands
 - Get TOTDs
 - Get club campaigns
 - Get club info
@@ -47,6 +47,7 @@ For `NadeoLiveServices`:
 For `NadeoMeetServices`:
 
 - Get the current Cup of the Day
+- Get various Cups of the Day
 
 ## Setup for a single service
 
