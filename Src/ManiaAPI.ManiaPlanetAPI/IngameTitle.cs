@@ -48,4 +48,8 @@ public sealed record IngameTitle(string Uid,
                                  [property: JsonPropertyName("screenshot_url_11")] string? ScreenshotUrl11,
                                  [property: JsonPropertyName("youtube_id_0")] string? YoutubeId0,
                                  [property: JsonPropertyName("youtube_id_1")] string? YoutubeId1,
-                                 [property: JsonPropertyName("youtube_id_2")] string? YoutubeId2);
+                                 [property: JsonPropertyName("youtube_id_2")] string? YoutubeId2,
+                                 [property: JsonPropertyName("youtube_id_3")] string? YoutubeId3,
+                                 [property: JsonPropertyName("youtube_id_4")] string? YoutubeId4,
+                                 [property: JsonPropertyName("youtube_id_5")] string? YoutubeId5,
+                                 [property: JsonPropertyName("youtube_id_6")] string? YoutubeId6);
