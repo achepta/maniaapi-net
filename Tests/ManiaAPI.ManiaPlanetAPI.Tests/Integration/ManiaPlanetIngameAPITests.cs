@@ -1,4 +1,6 @@
-﻿namespace ManiaAPI.ManiaPlanetAPI.Tests.Integration;
+﻿using Microsoft.Extensions.Configuration;
+
+namespace ManiaAPI.ManiaPlanetAPI.Tests.Integration;
 
 public class ManiaPlanetIngameAPITests
 {
@@ -7,6 +9,14 @@ public class ManiaPlanetIngameAPITests
     public ManiaPlanetIngameAPITests()
     {
         api = new ManiaPlanetIngameAPI();
+    }
+
+    [Fact]
+    public async Task SearchTitlesAsync()
+    {
+        var titles = await api.SearchTitlesAsync(filters: ["trackmania", "solo"], orderBy: "lastUpdate");
+
+        Assert.NotEmpty(titles);
     }
 
     [Fact]

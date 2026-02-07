@@ -1,11 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace ManiaAPI.NadeoAPI.Tests.Integration;
 
-public class NadeoClubServicesTests
+public class NadeoMeetServicesTests
 {
     [Fact]
     public async Task RequestManagement()
@@ -18,11 +19,19 @@ public class NadeoClubServicesTests
         var login = configuration.GetValue<string>("DedicatedServer:Login") ?? throw new Exception("DedicatedServer:Login user secret is required");
         var password = configuration.GetValue<string>("DedicatedServer:Password") ?? throw new Exception("DedicatedServer:Password user secret is required");
 
-        INadeoMeetServices nadeoMeetServices = new NadeoMeetServices();
+        var http = new HttpClient();
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("NadeoMeetServices Integration Test 1.0");
+
+#pragma warning disable CA1859
+        INadeoMeetServices nadeoMeetServices = new NadeoMeetServices(http);
+#pragma warning restore CA1859
 
         // Act
         await nadeoMeetServices.AuthorizeAsync(login, password, AuthorizationMethod.DedicatedServer);
 
-        var result = await nadeoMeetServices.GetCurrentCupOfTheDayAsync();
+#pragma warning disable IDE0059
+        var cotd = await nadeoMeetServices.GetCurrentCupOfTheDayAsync();
+        var cotds = await nadeoMeetServices.GetCupsOfTheDayAsync(CupOfTheDayType.COTW);
+#pragma warning restore IDE0059
     }
 }
