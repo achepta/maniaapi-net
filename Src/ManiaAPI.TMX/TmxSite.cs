@@ -11,3 +11,16 @@ public enum TmxSite
     Trackmania,
     Shootmania
 }
+
+public static class TmxSiteExtensions {
+    public static bool isMX(this TmxSite site) {
+        switch(site) {
+            case TmxSite.Maniaplanet:
+            case TmxSite.Trackmania:
+            case TmxSite.Shootmania:
+                return true;
+            default:
+                return false;
+        } 
+    }
+}

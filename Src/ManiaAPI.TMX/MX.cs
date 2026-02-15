@@ -19,8 +19,8 @@ public interface IMX : IClient {
 
     string GetMapImageUrl(long mapId, int? position = null);
     string GetMapImageUrl(MapItem map, int? position = null);
-    Task<HttpResponseMessage> GetMapImageResponseAsync(long mapId, int? position = null, CancellationToken cancellationToken = default);
-    Task<HttpResponseMessage> GetMapImageResponseAsync(MapItem map, int? position = null, CancellationToken cancellationToken = default);
+    Task<HttpResponseMessage> GetMapImageResponseAsync(long mapId, int? imageIndex = null, CancellationToken cancellationToken = default);
+    Task<HttpResponseMessage> GetMapImageResponseAsync(MapItem map, int? imageIndex = null, CancellationToken cancellationToken = default);
 
     string GetMapThumbnailUrl(long mapId);
     string GetMapThumbnailUrl(MapItem map);
@@ -29,8 +29,8 @@ public interface IMX : IClient {
 
     string GetMapScreenUrl(long mapId, int? position = null);
     string GetMapScreenUrl(MapItem map, int? position = null);
-    Task<HttpResponseMessage> GetMapScreenResponseAsync(long mapId, int? position = null, CancellationToken cancellationToken = default);
-    Task<HttpResponseMessage> GetMapScreenResponseAsync(MapItem map, int? position = null, CancellationToken cancellationToken = default);
+    Task<HttpResponseMessage> GetMapScreenResponseAsync(long mapId, int? imageIndex = null, CancellationToken cancellationToken = default);
+    Task<HttpResponseMessage> GetMapScreenResponseAsync(MapItem map, int? imageIndex = null, CancellationToken cancellationToken = default);
 
     string GetMappackThumbnailUrl(long mappackId);
     string GetMappackThumbnailUrl(MappackItem mappack);
@@ -118,12 +118,12 @@ public partial class MX : IMX {
         : $"{Client.BaseAddress}mapimage/{mapId}";
     public string GetMapImageUrl(MapItem map, int? position = null) => GetMapImageUrl(map.MapId, position);
 
-    public virtual async Task<HttpResponseMessage> GetMapImageResponseAsync(long mapId, int? position = null, CancellationToken cancellationToken = default) {
-        return await Client.GetAsync(GetMapImageUrl(mapId, position), cancellationToken);
+    public virtual async Task<HttpResponseMessage> GetMapImageResponseAsync(long mapId, int? imageIndex = null, CancellationToken cancellationToken = default) {
+        return await Client.GetAsync(GetMapImageUrl(mapId, imageIndex), cancellationToken);
     }
 
-    public virtual async Task<HttpResponseMessage> GetMapImageResponseAsync(MapItem map, int? position = null, CancellationToken cancellationToken = default) {
-        return await GetMapImageResponseAsync(map.MapId, position, cancellationToken);
+    public virtual async Task<HttpResponseMessage> GetMapImageResponseAsync(MapItem map, int? imageIndex = null, CancellationToken cancellationToken = default) {
+        return await GetMapImageResponseAsync(map.MapId, imageIndex, cancellationToken);
     }
 
     // TODO: add thumb, guid, mappackid, mappacksecret query parameters
@@ -132,12 +132,12 @@ public partial class MX : IMX {
         : $"{Client.BaseAddress}mapscreen/{mapId}";
     public string GetMapScreenUrl(MapItem map, int? position = null) => GetMapScreenUrl(map.MapId, position);
 
-    public virtual async Task<HttpResponseMessage> GetMapScreenResponseAsync(long mapId, int? position = null, CancellationToken cancellationToken = default) {
-        return await Client.GetAsync(GetMapScreenUrl(mapId, position), cancellationToken);
+    public virtual async Task<HttpResponseMessage> GetMapScreenResponseAsync(long mapId, int? imageIndex = null, CancellationToken cancellationToken = default) {
+        return await Client.GetAsync(GetMapScreenUrl(mapId, imageIndex), cancellationToken);
     }
 
-    public virtual async Task<HttpResponseMessage> GetMapScreenResponseAsync(MapItem map, int? position = null, CancellationToken cancellationToken = default) {
-        return await GetMapScreenResponseAsync(map.MapId, position, cancellationToken);
+    public virtual async Task<HttpResponseMessage> GetMapScreenResponseAsync(MapItem map, int? imageIndex = null, CancellationToken cancellationToken = default) {
+        return await GetMapScreenResponseAsync(map.MapId, imageIndex, cancellationToken);
     }
 
     // TODO: add guid, mappackid, mappacksecret query parameters
