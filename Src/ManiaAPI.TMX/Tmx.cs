@@ -1,4 +1,4 @@
-﻿using ManiaAPI.TMX.Attributes;
+using ManiaAPI.TMX.Attributes;
 
 namespace ManiaAPI.TMX;
 
@@ -37,10 +37,10 @@ public partial class TMX : ITMX
     public TmxSite Site { get; }
     public string SiteName { get; }
 
-    public TMX(HttpClient client, TmxSite site)
+    public TMX(HttpClient client, TmxSite site, TmxOptions? options = null)
     {
         Client = client ?? throw new ArgumentNullException(nameof(client));
-        Client.DefaultRequestHeaders.UserAgent.ParseAdd("ManiaAPI.NET/2.6.0 (TMX; Discord=bigbang1112)");
+        Client.DefaultRequestHeaders.UserAgent.ParseAdd((options ?? new TmxOptions()).UserAgent);
 
         Site = site;
         SiteName = site.ToString();

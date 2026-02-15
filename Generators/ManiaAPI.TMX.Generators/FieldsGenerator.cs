@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using System.Diagnostics;
 using System.Text;
 
@@ -18,12 +18,18 @@ public class FieldsGenerator : IIncrementalGenerator
 
         var fields = context.CompilationProvider.SelectMany((compilation, token) =>
         {
-            return compilation.GlobalNamespace
+            var maniaApiTmxNamespace = compilation.GlobalNamespace
                 .GetNamespaceMembers()
                 .FirstOrDefault(x => x.Name == "ManiaAPI")
-                .GetNamespaceMembers()
-                .FirstOrDefault(x => x.Name == "TMX")
-                .GetTypeMembers()
+                ?.GetNamespaceMembers()
+                .FirstOrDefault(x => x.Name == "TMX");
+
+            if (maniaApiTmxNamespace == null)
+            {
+                return Enumerable.Empty<INamedTypeSymbol>();
+            }
+
+            return Utils.GetAllTypes(maniaApiTmxNamespace)
                 .Where(x => x.GetAttributes()
                 .Any(x => x.AttributeClass?.Name == "FieldsAttribute"));
         });
@@ -34,7 +40,9 @@ public class FieldsGenerator : IIncrementalGenerator
     private void GenerateFields(SourceProductionContext context, INamedTypeSymbol symbol)
     {
         var sb = new StringBuilder("using System.Text;\n\n");
-        sb.AppendLine("namespace ManiaAPI.TMX;");
+        sb.Append("namespace ");
+        sb.Append(symbol.ContainingNamespace.ToDisplayString());
+        sb.AppendLine(";");
         sb.AppendLine();
         sb.Append("public readonly record struct ");
         sb.Append(symbol.Name);
@@ -59,14 +67,20 @@ public class FieldsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            var isFields = propSymbol.Type.GetAttributes()
+            var propType = propSymbol.Type;
+            if (propType is INamedTypeSymbol namedType && namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+            {
+                propType = namedType.TypeArguments[0];
+            }
+
+            var isFields = propType.GetAttributes()
                 .Any(x => x.AttributeClass?.Name == "FieldsAttribute");
 
             propSb.Append("    public ");
 
             if (isFields)
             {
-                propSb.Append(propSymbol.Type.Name);
+                propSb.Append(propType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
                 propSb.Append("Fields ");
             }
             else
@@ -83,7 +97,7 @@ public class FieldsGenerator : IIncrementalGenerator
 
             if (isFields)
             {
-                allSb.Append(propSymbol.Type.Name);
+                allSb.Append(propType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
                 allSb.AppendLine("Fields.All,");
             }
             else
@@ -107,7 +121,7 @@ public class FieldsGenerator : IIncrementalGenerator
         sb.Append(appendSb);
         sb.AppendLine("}");
 
-        context.AddSource($"{symbol.Name}Fields.cs", sb.ToString());
+        context.AddSource($"{symbol.ContainingNamespace.ToDisplayString()}.{symbol.Name}Fields.cs", sb.ToString());
     }
 
     private static void AppendFieldCheck(StringBuilder sb, IPropertySymbol propSymbol, bool isFields, IPropertySymbol[]? accessToProperty = null)
@@ -123,7 +137,13 @@ public class FieldsGenerator : IIncrementalGenerator
                 accessToProperty = accessToProperty.Append(propSymbol).ToArray();
             }
 
-            foreach (var symbol in propSymbol.Type.GetMembers().OfType<IPropertySymbol>())
+            var memberType = propSymbol.Type;
+            if (memberType is INamedTypeSymbol nt && nt.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+            {
+                memberType = nt.TypeArguments[0];
+            }
+
+            foreach (var symbol in memberType.GetMembers().OfType<IPropertySymbol>())
             {
                 if (symbol.Name == "EqualityContract")
                 {
@@ -161,7 +181,7 @@ public class FieldsGenerator : IIncrementalGenerator
             foreach (var accessProp in accessToProperty)
             {
                 sb.Append("            sb.Append(nameof(");
-                sb.Append(accessProp.ContainingType.Name);
+                sb.Append(accessProp.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
                 sb.Append('.');
                 sb.Append(accessProp.Name);
                 sb.AppendLine("));");
@@ -170,7 +190,7 @@ public class FieldsGenerator : IIncrementalGenerator
         }
 
         sb.Append("            sb.Append(nameof(");
-        sb.Append(propSymbol.ContainingType.Name);
+        sb.Append(propSymbol.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
         sb.Append('.');
         sb.Append(propSymbol.Name);
         sb.AppendLine("));");

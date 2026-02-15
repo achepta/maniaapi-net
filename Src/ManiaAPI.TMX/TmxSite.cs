@@ -6,5 +6,8 @@ public enum TmxSite
     TMNF,
     Nations,
     Sunrise,
-    Original
+    Original,
+    Maniaplanet,
+    Trackmania,
+    Shootmania
 }

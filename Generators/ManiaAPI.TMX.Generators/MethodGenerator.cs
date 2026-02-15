@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using System.Diagnostics;
 using System.Text;
 
@@ -21,11 +21,16 @@ public class MethodGenerator : IIncrementalGenerator
             var maniaApiTmxNamespace = compilation.GlobalNamespace
                 .GetNamespaceMembers()
                 .FirstOrDefault(x => x.Name == "ManiaAPI")
-                .GetNamespaceMembers()
+                ?.GetNamespaceMembers()
                 .FirstOrDefault(x => x.Name == "TMX");
 
-            return maniaApiTmxNamespace.GetTypeMembers()
-                .Where(x => x.Interfaces.Any(x => x.Name == "ITMX"))
+            if (maniaApiTmxNamespace == null)
+            {
+                return Enumerable.Empty<IMethodSymbol>();
+            }
+
+            return Utils.GetAllTypes(maniaApiTmxNamespace)
+                .Where(x => x.Interfaces.Any(i => i.Name == "ITMX" || i.Name == "IMX"))
                 .SelectMany(clientSymbol => clientSymbol.GetMembers()
                     .OfType<IMethodSymbol>()
                     .Where(methodSymbol => methodSymbol.GetAttributes().Any(x => x.AttributeClass?.Name == "GetMethodAttribute")));
@@ -46,7 +51,9 @@ public class MethodGenerator : IIncrementalGenerator
         sb.AppendLine("using System.Net.Http.Json;");
         sb.AppendLine("using System.Text;");
         sb.AppendLine();
-        sb.AppendLine("namespace ManiaAPI.TMX;");
+        sb.Append("namespace ");
+        sb.Append(clientSymbol.ContainingNamespace.ToDisplayString());
+        sb.AppendLine(";");
         sb.AppendLine();
         sb.Append("public partial class ");
         sb.AppendLine(clientSymbol.Name);
@@ -85,14 +92,27 @@ public class MethodGenerator : IIncrementalGenerator
 
         sb.AppendLine("        cancellationToken.ThrowIfCancellationRequested();");
         sb.AppendLine();
-        sb.Append("        var sb = new StringBuilder(\"");
-        sb.Append(route);
-        sb.AppendLine("\");");
-        sb.Append("        ");
-        sb.Append(symbol.Parameters[0].Name);
-        sb.AppendLine(".AppendQueryString(sb);");
-        sb.AppendLine();
-        sb.AppendLine("        using var response = await Client.GetAsync(sb.ToString(), cancellationToken);");
+
+        var hasParameters = symbol.Parameters.Length > 0 && symbol.Parameters[0].Type.Name != "CancellationToken";
+
+        if (hasParameters)
+        {
+            sb.Append("        var sb = new StringBuilder(\"");
+            sb.Append(route);
+            sb.AppendLine("\");");
+            sb.Append("        ");
+            sb.Append(symbol.Parameters[0].Name);
+            sb.AppendLine(".AppendQueryString(sb);");
+            sb.AppendLine();
+            sb.AppendLine("        using var response = await Client.GetAsync(sb.ToString(), cancellationToken);");
+        }
+        else
+        {
+            sb.Append("        using var response = await Client.GetAsync(\"");
+            sb.Append(route);
+            sb.AppendLine("\", cancellationToken);");
+        }
+
         sb.AppendLine();
         sb.AppendLine("        response.EnsureSuccessStatusCode();");
         sb.AppendLine();
@@ -105,17 +125,12 @@ public class MethodGenerator : IIncrementalGenerator
             returnSymbol = (returnSymbol as INamedTypeSymbol)?.TypeArguments[0] ?? throw new Exception("This should not happen");
         }
 
-        sb.Append(returnSymbol.Name);
+        sb.Append(Utils.GetJsonContextPropertyName(returnSymbol));
 
-        if (returnSymbol is INamedTypeSymbol namedReturnSymbol)
-        {
-            foreach (var typeArg in namedReturnSymbol.TypeArguments)
-            {
-                sb.Append(typeArg.Name);
-            }
-        }
-
-        sb.AppendLine(", cancellationToken) ?? new();");
+        var defaultValue = returnSymbol is IArrayTypeSymbol ? "[]" : "new()";
+        sb.Append(", cancellationToken) ?? ");
+        sb.Append(defaultValue);
+        sb.AppendLine(";");
 
         sb.AppendLine("    }");
         sb.AppendLine("}");
