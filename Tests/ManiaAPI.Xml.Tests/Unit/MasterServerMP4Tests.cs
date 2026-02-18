@@ -7,6 +7,14 @@ namespace ManiaAPI.Xml.Tests.Unit;
 public class MasterServerMP4Tests
 {
     [Fact]
+    public async Task GetPlayerInfos_ReturnsPlayerInfos()
+    {
+        var server = new MasterServerMP4();
+        var playerInfos = await server.GetPlayerInfosAsync("bigbang1112");
+        Assert.NotNull(playerInfos);
+    }
+
+    [Fact]
     public async Task GetWaitingParamsAsync_ReturnsMasterServers()
     {
         var server = new InitServerMP4();

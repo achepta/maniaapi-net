@@ -9,6 +9,8 @@ public interface IMasterServer : IDisposable
 
     Task<MasterServerResponse<ImmutableList<League>>> GetLeaguesResponseAsync(CancellationToken cancellationToken = default);
     Task<ImmutableList<League>> GetLeaguesAsync(CancellationToken cancellationToken = default);
+    Task<MasterServerResponse<PlayerInfos>> GetPlayerInfosResponseAsync(string login, CancellationToken cancellationToken = default);
+    Task<PlayerInfos> GetPlayerInfosAsync(string login, CancellationToken cancellationToken = default);
 }
 
 public abstract class MasterServer : IMasterServer
@@ -88,6 +90,62 @@ public abstract class MasterServer : IMasterServer
     public async Task<ImmutableList<League>> GetLeaguesAsync(CancellationToken cancellationToken = default)
     {
         return (await GetLeaguesResponseAsync(cancellationToken)).Result;
+    }
+
+    public async Task<MasterServerResponse<PlayerInfos>> GetPlayerInfosResponseAsync(string login, CancellationToken cancellationToken = default)
+    {
+        const string RequestName = "GetPlayerInfos";
+        var parametersXml = $"<login>{login}</login>";
+        var response = await XmlHelper.SendAsync(Client, ServerUri, GameXml, authorXml: null, RequestName, parametersXml, cancellationToken);
+        return XmlHelper.ProcessResponseResult(RequestName, response, (ref MiniXmlReader xml) =>
+        {
+            var nickname = string.Empty;
+            var zone = string.Empty;
+            var createdAt = default(DateTimeOffset?);
+            var d = 0;
+            var lastZoneUpdate = default(DateTimeOffset?);
+            var k = default(int?);
+
+            while (xml.TryReadStartElement(out var infoElement))
+            {
+                switch (infoElement)
+                {
+                    case "a":
+                        login = xml.ReadContentAsString();
+                        break;
+                    case "b":
+                        nickname = xml.ReadContentAsString();
+                        break;
+                    case "c":
+                        zone = xml.ReadContentAsString();
+                        break;
+                    case "d":
+                        d = int.Parse(xml.ReadContent());
+                        break;
+                    case "e":
+                        var e = long.Parse(xml.ReadContent());
+                        createdAt = e == 0 ? null : DateTimeOffset.FromUnixTimeSeconds(e);
+                        break;
+                    case "j":
+                        lastZoneUpdate = DateTimeOffset.FromUnixTimeSeconds(long.Parse(xml.ReadContent()));
+                        break;
+                    case "k":
+                        k = int.Parse(xml.ReadContent());
+                        break;
+                    default:
+                        xml.ReadContent();
+                        break;
+                }
+                _ = xml.SkipEndElement();
+            }
+
+            return new PlayerInfos(login, nickname, zone, createdAt, d, lastZoneUpdate, k);
+        });
+    }
+
+    public async Task<PlayerInfos> GetPlayerInfosAsync(string login, CancellationToken cancellationToken = default)
+    {
+        return (await GetPlayerInfosResponseAsync(login, cancellationToken)).Result;
     }
 
     public virtual void Dispose()
