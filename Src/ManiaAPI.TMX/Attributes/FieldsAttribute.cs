@@ -1,6 +1,6 @@
-﻿namespace ManiaAPI.TMX.Attributes;
+namespace ManiaAPI.TMX.Attributes;
 
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
 internal sealed class FieldsAttribute : Attribute
 {
 }

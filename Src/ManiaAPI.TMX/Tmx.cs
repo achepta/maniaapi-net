@@ -1,4 +1,4 @@
-﻿using ManiaAPI.TMX.Attributes;
+using ManiaAPI.TMX.Attributes;
 
 namespace ManiaAPI.TMX;
 

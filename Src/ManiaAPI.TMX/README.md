@@ -2,15 +2,30 @@
 
 [![NuGet](https://img.shields.io/nuget/vpre/ManiaAPI.TMX?style=for-the-badge&logo=nuget)](https://www.nuget.org/packages/ManiaAPI.TMX/)
 
-Wraps https://tm-exchange.com/ (old TMX).
+Wraps:
+- https://tm.mania.exchange
+- https://trackmania.exchange	
+- https://sm.mania.exchange	
+- https://tmuf.exchange
+- https://tmnf.exchange	
+- https://original.tm-exchange.com	
+- https://sunrise.tm-exchange.com	
+- https://nations.tm-exchange.com
 
 ### Setup
+
+
+> [!WARNING] \
+> Note that `TMX` and `MX` are classes for covering different sets of games. Examples below will mostly use `TMX`. But you can use them with `MX` too.
 
 ```cs
 using ManiaAPI.TMX;
 
 // Pick one from TMUF, TMNF, Nations, Sunrise, Original
 var tmx = new TMX(TmxSite.TMUF);
+
+// or one from Trackmania, Maniaplanet, Shootmania
+var tmx = new MX(TMXSite.Trackmania);
 ```
 
 or with DI, for a specific site, using an injected `HttpClient`:
@@ -26,16 +41,25 @@ builder.Services.AddScoped<TMX>(provider => new TMX(
 For multiple sites in DI, you can use keyed services:
 
 ```cs
-foreach (TmxSite site in Enum.GetValues<TmxSite>())
+foreach (var site in Enum.GetValues<TmxSite>())
 {
-    builder.Services.AddHttpClient($"{nameof(TMX)}_{site}");
-
-    builder.Services.AddKeyedScoped(site, (provider, key) => new TMX(
-        provider.GetRequiredService<IHttpClientFactory>().CreateClient($"{nameof(TMX)}_{key}"), site));
-    builder.Services.AddScoped(provider => provider.GetRequiredKeyedService<TMX>(site));
+    if (site.isMX()) {
+        services.AddHttpClient($"{nameof(MX)}_{site}");
+        services.AddKeyedScoped(site, (provider, key) => new MX(
+            provider.GetRequiredService<IHttpClientFactory>().CreateClient($"{nameof(MX)}_{key}"), site, options));
+        services.AddScoped(provider => provider.GetRequiredKeyedService<MX>(site));
+    }
+    else {
+        services.AddHttpClient($"{nameof(TMX)}_{site}");
+        services.AddKeyedScoped(site, (provider, key) => new TMX(
+            provider.GetRequiredService<IHttpClientFactory>().CreateClient($"{nameof(TMX)}_{key}"), site, options));
+        services.AddScoped(provider => provider.GetRequiredKeyedService<TMX>(site));
+    }
 }
 
-builder.Services.AddScoped(provider => Enum.GetValues<TmxSite>()
+services.AddScoped(provider => Enum.GetValues<TmxSite>().Where(site => site.isMX())
+    .ToImmutableDictionary(site => site, site => provider.GetRequiredKeyedService<MX>(site)));
+services.AddScoped(provider => Enum.GetValues<TmxSite>().Where(site => !site.isMX())
     .ToImmutableDictionary(site => site, site => provider.GetRequiredKeyedService<TMX>(site)));
 ```
 
