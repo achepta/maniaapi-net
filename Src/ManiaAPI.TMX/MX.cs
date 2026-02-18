@@ -68,9 +68,9 @@ public partial class MX : IMX {
     public TmxSite Site { get; }
     public string SiteName { get; }
 
-    public MX(HttpClient client, TmxSite site, TmxOptions? options = null) {
+    public MX(HttpClient client, TmxSite site) {
         Client = client ?? throw new ArgumentNullException(nameof(client));
-        Client.DefaultRequestHeaders.UserAgent.ParseAdd((options ?? new TmxOptions()).UserAgent);
+        Client.DefaultRequestHeaders.UserAgent.ParseAdd("ManiaAPI.NET/2.6.0 (TMX; Discord=bigbang1112)");
 
         Site = site;
         SiteName = site.ToString();
