@@ -1,4 +1,5 @@
-﻿using ManiaAPI.Xml.TMUF;
+﻿using ManiaAPI.Xml.MP4;
+using ManiaAPI.Xml.TMUF;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -7,6 +8,14 @@ namespace ManiaAPI.Xml.Tests.Unit;
 
 public class MasterServerTMUFTests
 {
+    [Fact]
+    public async Task GetPlayerInfos_ReturnsPlayerInfos()
+    {
+        var server = new MasterServerTMUF();
+        var playerInfos = await server.GetPlayerInfosAsync("bigbang1112");
+        Assert.NotNull(playerInfos);
+    }
+
     [Fact]
     public void GetScoresUrl_ReturnsCorrectUrl()
     {

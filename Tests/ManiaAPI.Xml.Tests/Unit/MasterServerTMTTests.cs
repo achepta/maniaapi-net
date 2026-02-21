@@ -1,4 +1,5 @@
-﻿using ManiaAPI.Xml.TMT;
+﻿using ManiaAPI.Xml.MP4;
+using ManiaAPI.Xml.TMT;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -7,6 +8,17 @@ namespace ManiaAPI.Xml.Tests.Unit;
 
 public class MasterServerTMTTests
 {
+    [Fact]
+    public async Task GetPlayerInfos_ReturnsPlayerInfos()
+    {
+        var initServer = new InitServerTMT(Platform.PC);
+        var waitingParams = await initServer.GetWaitingParamsAsync();
+        var masterServer = new MasterServerTMT(waitingParams.MasterServers.First());
+
+        var playerInfos = await masterServer.GetPlayerInfosAsync("zojytyxy-pc56f3bdff95566");
+        Assert.NotNull(playerInfos);
+    }
+
     [Theory]
     [InlineData(Platform.PC)]
     [InlineData(Platform.XB1)]

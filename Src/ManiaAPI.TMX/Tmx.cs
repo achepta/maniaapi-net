@@ -1,4 +1,6 @@
-﻿using ManiaAPI.TMX.Attributes;
+using ManiaAPI.TMX.Attributes;
+using System.Net.Http.Headers;
+using System.Reflection.PortableExecutable;
 
 namespace ManiaAPI.TMX;
 
@@ -40,7 +42,19 @@ public partial class TMX : ITMX
     public TMX(HttpClient client, TmxSite site)
     {
         Client = client ?? throw new ArgumentNullException(nameof(client));
-        Client.DefaultRequestHeaders.UserAgent.ParseAdd("ManiaAPI.NET/2.6.0 (TMX; Discord=bigbang1112)");
+
+        var headers = Client.DefaultRequestHeaders;
+
+        const string product = "ManiaAPI.NET";
+        const string version = "2.7.0";
+
+        var libraryExists = headers.UserAgent.Any(h => h.Product?.Name == product && h.Product?.Version == version);
+
+        if (!libraryExists)
+        {
+            headers.UserAgent.Add(new ProductInfoHeaderValue(product, version));
+            headers.UserAgent.Add(new ProductInfoHeaderValue("(TMX; Discord=bigbang1112)"));
+        }
 
         Site = site;
         SiteName = site.ToString();

@@ -42,6 +42,7 @@ For TMT:
 
 For all games:
 
+- Get player nickname, zone, creation/zone timestamp
 - Get all available zones
 
 ## Setup for TMUF

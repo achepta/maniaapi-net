@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace ManiaAPI.TMX;
 
@@ -7,4 +7,12 @@ namespace ManiaAPI.TMX;
 [JsonSerializable(typeof(ItemCollection<TrackpackItem>))]
 [JsonSerializable(typeof(ItemCollection<UserItem>))]
 [JsonSerializable(typeof(ItemCollection<LeaderboardItem>))]
+[JsonSerializable(typeof(ItemCollection<MapItem>))]
+[JsonSerializable(typeof(ItemCollection<ReplayItemMX>))]
+[JsonSerializable(typeof(ItemCollection<UserItemMX>))]
+[JsonSerializable(typeof(ItemCollection<VideoItem>))]
+[JsonSerializable(typeof(ItemCollection<MappackItem>))]
+[JsonSerializable(typeof(SearchOrderItem[]))]
+[JsonSerializable(typeof(TagInfo[]))]
+[JsonSerializable(typeof(string[]))]
 internal sealed partial class TMXJsonContext : JsonSerializerContext { }

@@ -486,25 +486,40 @@ builder.Services.AddTrackmaniaWS(new TrackmaniaWSOptions
 
 [![NuGet](https://img.shields.io/nuget/vpre/ManiaAPI.TMX?style=for-the-badge&logo=nuget)](https://www.nuget.org/packages/ManiaAPI.TMX/)
 
-Wraps https://tm-exchange.com/ (old TMX).
+Wraps:
+- https://tm.mania.exchange
+- https://trackmania.exchange
+- https://sm.mania.exchange
+- https://tmuf.exchange
+- https://tmnf.exchange
+- https://original.tm-exchange.com
+- https://sunrise.tm-exchange.com
+- https://nations.tm-exchange.com
 
 ### Features
 
 - Get replays
 - Search leaderboards
 - Search trackpacks
-- Search tracks
+- Search tracks/maps
 - Search users
 - Get Gbx URLs and HTTP responses
 - Get image URLs and HTTP responses
 
 ### Setup
 
+
+> [!WARNING] \
+> Note that `TMX` and `MX` are classes for covering different sets of games. Examples below will mostly use `TMX`. But you can use them with `MX` too.
+
 ```cs
 using ManiaAPI.TMX;
 
 // Pick one from TMUF, TMNF, Nations, Sunrise, Original
 var tmx = new TMX(TmxSite.TMUF);
+
+// or one from Trackmania, Maniaplanet, Shootmania
+var tmx = new MX(TMXSite.Trackmania);
 ```
 
 or with DI, for a specific site, using an injected `HttpClient`:
@@ -613,6 +628,7 @@ For TMT:
 
 For all games:
 
+- Get player nickname, zone, creation/zone timestamp
 - Get all available zones
 
 ### Setup for TMUF

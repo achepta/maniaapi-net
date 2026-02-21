@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using System.Diagnostics;
 using System.Text;
 
@@ -21,11 +21,16 @@ public class ParametersGenerator : IIncrementalGenerator
             var maniaApiTmxNamespace = compilation.GlobalNamespace
                 .GetNamespaceMembers()
                 .FirstOrDefault(x => x.Name == "ManiaAPI")
-                .GetNamespaceMembers()
+                ?.GetNamespaceMembers()
                 .FirstOrDefault(x => x.Name == "TMX");
 
-            return maniaApiTmxNamespace.GetTypeMembers()
-                .Where(x => x.Interfaces.Any(x => x.Name == "ITMX"))
+            if (maniaApiTmxNamespace == null)
+            {
+                return Enumerable.Empty<INamedTypeSymbol>();
+            }
+
+            return Utils.GetAllTypes(maniaApiTmxNamespace)
+                .Where(x => x.Interfaces.Any(i => i.Name == "ITMX" || i.Name == "IMX"))
                 .SelectMany(clientSymbol => clientSymbol.GetTypeMembers()
                     .Where(typeSymbol => typeSymbol.GetAttributes().Any(x => x.AttributeClass?.Name == "ParametersAttribute")));
         });
@@ -46,7 +51,9 @@ public class ParametersGenerator : IIncrementalGenerator
         sb.AppendLine("using System.Text;");
         sb.AppendLine("using System.Net;");
         sb.AppendLine();
-        sb.AppendLine("namespace ManiaAPI.TMX;");
+        sb.Append("namespace ");
+        sb.Append(clientSymbol.ContainingNamespace.ToDisplayString());
+        sb.AppendLine(";");
         sb.AppendLine();
         sb.Append("public partial class ");
         sb.AppendLine(clientSymbol.Name);
@@ -58,7 +65,7 @@ public class ParametersGenerator : IIncrementalGenerator
         sb.AppendLine("    {");
 
         sb.Append("        public ");
-        sb.Append(resultSymbol.Name);
+        sb.Append(resultSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
         sb.AppendLine("Fields Fields { get; init; }");
         sb.AppendLine();
         sb.Append("        public ");
@@ -66,7 +73,7 @@ public class ParametersGenerator : IIncrementalGenerator
         sb.AppendLine("()");
         sb.AppendLine("        {");
         sb.Append("            Fields = ");
-        sb.Append(resultSymbol.Name);
+        sb.Append(resultSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
         sb.AppendLine("Fields.All;");
         sb.AppendLine("        }");
 
