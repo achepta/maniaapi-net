@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization.Metadata;
 
@@ -26,7 +27,19 @@ public class UnitedLadder : IUnitedLadder
     public UnitedLadder(HttpClient client)
     {
         Client = client ?? throw new ArgumentNullException(nameof(client));
-        Client.DefaultRequestHeaders.UserAgent.ParseAdd("ManiaAPI.NET/2.3.3 (UnitedLadder; Discord=bigbang1112)");
+
+        var headers = Client.DefaultRequestHeaders;
+
+        const string product = "ManiaAPI.NET";
+        const string version = "2.7.0";
+
+        var libraryExists = headers.UserAgent.Any(h => h.Product?.Name == product && h.Product?.Version == version);
+
+        if (!libraryExists)
+        {
+            headers.UserAgent.Add(new ProductInfoHeaderValue(product, version));
+            headers.UserAgent.Add(new ProductInfoHeaderValue("(UnitedLadder; Discord=bigbang1112)"));
+        }
     }
 
     public UnitedLadder() : this(new HttpClient())

@@ -56,7 +56,18 @@ public abstract class NadeoAPI : INadeoAPI
         Handler = handler ?? throw new ArgumentNullException(nameof(handler));
         AutomaticallyAuthorize = automaticallyAuthorize;
 
-        Client.DefaultRequestHeaders.UserAgent.ParseAdd("ManiaAPI.NET/2.6.0 (NadeoAPI; Email=petrpiv1@gmail.com; Discord=bigbang1112)");
+        var headers = Client.DefaultRequestHeaders;
+
+        const string product = "ManiaAPI.NET";
+        const string version = "2.7.0";
+
+        var libraryExists = headers.UserAgent.Any(h => h.Product?.Name == product && h.Product?.Version == version);
+
+        if (!libraryExists)
+        {
+            headers.UserAgent.Add(new ProductInfoHeaderValue(product, version));
+            headers.UserAgent.Add(new ProductInfoHeaderValue("(NadeoAPI; Email=petrpiv1@gmail.com; Discord=bigbang1112)"));
+        }
     }
 
     /// <summary>

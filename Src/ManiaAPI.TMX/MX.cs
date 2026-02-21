@@ -1,11 +1,12 @@
 using ManiaAPI.TMX.Attributes;
+using System.Net.Http.Headers;
 
 namespace ManiaAPI.TMX;
 
-public interface IMX : IClient {
+public interface IMX : IClient
+{
     TmxSite Site { get; }
     string SiteName { get; }
-
 
     string GetMapGbxUrl(long mapId);
     string GetMapGbxUrl(MapItem map);
@@ -63,14 +64,28 @@ public interface IMX : IClient {
 
 }
 
-public partial class MX : IMX {
+public partial class MX : IMX
+{
     public HttpClient Client { get; }
     public TmxSite Site { get; }
     public string SiteName { get; }
 
-    public MX(HttpClient client, TmxSite site) {
+    public MX(HttpClient client, TmxSite site)
+    {
         Client = client ?? throw new ArgumentNullException(nameof(client));
-        Client.DefaultRequestHeaders.UserAgent.ParseAdd("ManiaAPI.NET/2.6.0 (TMX; Discord=bigbang1112)");
+
+        var headers = Client.DefaultRequestHeaders;
+
+        const string product = "ManiaAPI.NET";
+        const string version = "2.7.0";
+
+        var libraryExists = headers.UserAgent.Any(h => h.Product?.Name == product && h.Product?.Version == version);
+
+        if (!libraryExists)
+        {
+            headers.UserAgent.Add(new ProductInfoHeaderValue(product, version));
+            headers.UserAgent.Add(new ProductInfoHeaderValue("(TMX; Discord=bigbang1112)"));
+        }
 
         Site = site;
         SiteName = site.ToString();
@@ -91,11 +106,13 @@ public partial class MX : IMX {
     public string GetMapGbxUrl(long mapId) => $"{Client.BaseAddress}mapgbx/{mapId}";
     public string GetMapGbxUrl(MapItem map) => GetMapGbxUrl(map.MapId);
 
-    public virtual async Task<HttpResponseMessage> GetMapGbxResponseAsync(long mapId, CancellationToken cancellationToken = default) {
+    public virtual async Task<HttpResponseMessage> GetMapGbxResponseAsync(long mapId, CancellationToken cancellationToken = default)
+    {
         return await Client.GetAsync(GetMapGbxUrl(mapId), cancellationToken);
     }
 
-    public virtual async Task<HttpResponseMessage> GetMapGbxResponseAsync(MapItem map, CancellationToken cancellationToken = default) {
+    public virtual async Task<HttpResponseMessage> GetMapGbxResponseAsync(MapItem map, CancellationToken cancellationToken = default)
+    {
         return await GetMapGbxResponseAsync(map.MapId, cancellationToken);
     }
     
@@ -118,11 +135,13 @@ public partial class MX : IMX {
         : $"{Client.BaseAddress}mapimage/{mapId}";
     public string GetMapImageUrl(MapItem map, int? position = null) => GetMapImageUrl(map.MapId, position);
 
-    public virtual async Task<HttpResponseMessage> GetMapImageResponseAsync(long mapId, int? imageIndex = null, CancellationToken cancellationToken = default) {
+    public virtual async Task<HttpResponseMessage> GetMapImageResponseAsync(long mapId, int? imageIndex = null, CancellationToken cancellationToken = default)
+    {
         return await Client.GetAsync(GetMapImageUrl(mapId, imageIndex), cancellationToken);
     }
 
-    public virtual async Task<HttpResponseMessage> GetMapImageResponseAsync(MapItem map, int? imageIndex = null, CancellationToken cancellationToken = default) {
+    public virtual async Task<HttpResponseMessage> GetMapImageResponseAsync(MapItem map, int? imageIndex = null, CancellationToken cancellationToken = default)
+    {
         return await GetMapImageResponseAsync(map.MapId, imageIndex, cancellationToken);
     }
 
@@ -132,11 +151,13 @@ public partial class MX : IMX {
         : $"{Client.BaseAddress}mapscreen/{mapId}";
     public string GetMapScreenUrl(MapItem map, int? position = null) => GetMapScreenUrl(map.MapId, position);
 
-    public virtual async Task<HttpResponseMessage> GetMapScreenResponseAsync(long mapId, int? imageIndex = null, CancellationToken cancellationToken = default) {
+    public virtual async Task<HttpResponseMessage> GetMapScreenResponseAsync(long mapId, int? imageIndex = null, CancellationToken cancellationToken = default)
+    {
         return await Client.GetAsync(GetMapScreenUrl(mapId, imageIndex), cancellationToken);
     }
 
-    public virtual async Task<HttpResponseMessage> GetMapScreenResponseAsync(MapItem map, int? imageIndex = null, CancellationToken cancellationToken = default) {
+    public virtual async Task<HttpResponseMessage> GetMapScreenResponseAsync(MapItem map, int? imageIndex = null, CancellationToken cancellationToken = default)
+    {
         return await GetMapScreenResponseAsync(map.MapId, imageIndex, cancellationToken);
     }
 
@@ -144,22 +165,26 @@ public partial class MX : IMX {
     public string GetMapThumbnailUrl(long mapId) => $"{Client.BaseAddress}mapthumb/{mapId}";
     public string GetMapThumbnailUrl(MapItem map) => GetMapThumbnailUrl(map.MapId);
 
-    public virtual async Task<HttpResponseMessage> GetMapThumbnailResponseAsync(long mapId, CancellationToken cancellationToken = default) {
+    public virtual async Task<HttpResponseMessage> GetMapThumbnailResponseAsync(long mapId, CancellationToken cancellationToken = default)
+    {
         return await Client.GetAsync(GetMapThumbnailUrl(mapId), cancellationToken);
     }
 
-    public virtual async Task<HttpResponseMessage> GetMapThumbnailResponseAsync(MapItem map, CancellationToken cancellationToken = default) {
+    public virtual async Task<HttpResponseMessage> GetMapThumbnailResponseAsync(MapItem map, CancellationToken cancellationToken = default)
+    {
         return await GetMapThumbnailResponseAsync(map.MapId, cancellationToken);
     }
 
     public string GetMappackThumbnailUrl(long mappackId) => $"{Client.BaseAddress}mappackthumb/{mappackId}";
     public string GetMappackThumbnailUrl(MappackItem mappack) => GetMappackThumbnailUrl(mappack.MappackId);
 
-    public virtual async Task<HttpResponseMessage> GetMappackThumbnailResponseAsync(long mappackId, CancellationToken cancellationToken = default) {
+    public virtual async Task<HttpResponseMessage> GetMappackThumbnailResponseAsync(long mappackId, CancellationToken cancellationToken = default)
+    {
         return await Client.GetAsync(GetMappackThumbnailUrl(mappackId), cancellationToken);
     }
 
-    public virtual async Task<HttpResponseMessage> GetMappackThumbnailResponseAsync(MappackItem mappack, CancellationToken cancellationToken = default) {
+    public virtual async Task<HttpResponseMessage> GetMappackThumbnailResponseAsync(MappackItem mappack, CancellationToken cancellationToken = default)
+    {
         return await GetMappackThumbnailResponseAsync(mappack.MappackId, cancellationToken);
     }
 
@@ -778,7 +803,8 @@ public partial class MX : IMX {
     [GetMethod("api/meta/titlepacks")]
     public virtual partial Task<string[]> GetTitlepacksAsync(CancellationToken cancellationToken = default);
 
-    public virtual void Dispose() {
+    public virtual void Dispose()
+    {
         Client.Dispose();
         GC.SuppressFinalize(this);
     }
